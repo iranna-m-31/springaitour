@@ -6,7 +6,7 @@ export default defineConfig({
   forbidOnly: false,
   retries: 1,
   use: {
-    baseURL: 'http://localhost:8080',
+    baseURL: 'https://springaitour.vercel.app',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -21,11 +21,4 @@ export default defineConfig({
       },
     },
   ],
-  webServer: {
-    command: 'cd /Users/irannam/Developer/springai && ./gradlew bootRun',
-    url: 'http://localhost:8080/api/tutor/health',
-    timeout: 120000,
-    reuseExistingServer: !process.env.CI,
-    restartOnFailure: true,
-  },
 })

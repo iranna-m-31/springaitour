@@ -1,4 +1,6 @@
-const BASE = typeof window !== 'undefined' ? window.location.origin : ''
+const BASE = typeof import.meta.env !== 'undefined' && import.meta.env.VITE_API_BASE_URL
+  ? import.meta.env.VITE_API_BASE_URL
+  : (typeof window !== 'undefined' ? window.location.origin : '')
 
 export interface ApiError {
   status: number

@@ -4,9 +4,9 @@ test('should navigate through all features and test Try It buttons', async ({ pa
   // Increase timeout: 16 features × Try It buttons = longer test
   test.setTimeout(600000) // 10 minutes
 
-  // Start from homepage
-  await page.goto('http://localhost:8080')
-  await page.waitForSelector('text=Spring AI 2.0.1 Tutorial')
+  // Start from homepage (uses baseURL from playwright.config.ts)
+  await page.goto('/')
+  await page.waitForSelector('h1:has-text("Interactive Spring AI Tutorial")')
 
   // Get all feature links from the sidebar
   const allLinks = page.locator('.feature-nav li')
@@ -108,8 +108,8 @@ test('should navigate through all features and test Try It buttons', async ({ pa
 })
 
 test('should test Playground page specifically', async ({ page }) => {
-  await page.goto('http://localhost:8080')
-  await page.waitForSelector('text=Spring AI 2.0.1 Tutorial')
+  await page.goto('/')
+  await page.waitForSelector('h1:has-text("Interactive Spring AI Tutorial")')
 
   // Navigate to playground
   await page.click('text=🧪 Playground')
@@ -154,8 +154,8 @@ test('should test Playground page specifically', async ({ page }) => {
 })
 
 test('should test Download section', async ({ page }) => {
-  await page.goto('http://localhost:8080')
-  await page.waitForSelector('text=Spring AI 2.0.1 Tutorial')
+  await page.goto('/')
+  await page.waitForSelector('h1:has-text("Interactive Spring AI Tutorial")')
 
   await page.click('text=📦 Download Project')
   await page.waitForLoadState('networkidle')
