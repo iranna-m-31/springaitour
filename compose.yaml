@@ -1,0 +1,41 @@
+# Docker Compose for Spring AI development
+#
+# Usage: docker compose up -d
+#
+# This starts PostgreSQL (with pgvector) and Redis for local development.
+# Spring Boot auto-starts these services before booting when
+# spring-boot-docker-compose support is enabled.
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: springai
+      POSTGRES_USER: springai
+      POSTGRES_PASSWORD: springai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # Optional: Qdrant vector database for production RAG
+  # Uncomment if using spring-ai-starter-vector-store-qdrant
+  # qdrant:
+  #   image: qdrant/qdrant:latest
+  #   ports:
+  #     - "6333:6333"
+  #     - "6334:6334"
+  #   volumes:
+  #     - qdrant_data:/qdrant/storage
+
+volumes:
+  postgres_data:
+  redis_data:
+  # qdrant_data:

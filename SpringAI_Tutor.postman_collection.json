@@ -1,0 +1,650 @@
+{
+	"info": {
+		"_postman_id": "spring-ai-tutor-2025",
+		"name": "Spring AI 2.0.1 Tutor",
+		"description": "Postman collection for Spring AI 2.0.1 tutorial - walk through in order following SPRING_AI_TUTOR.md",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Plain Chat",
+			"item": [
+				{
+					"name": "GET /ai",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai?userInput=Tell me a joke",
+							"host": ["localhost:8080"],
+							"path": ["ai"],
+							"query": [
+								{
+									"key": "userInput",
+									"value": "Tell me a joke"
+								}
+							]
+						},
+						"description": "The simplest chat - ChatClient fluent API in minimal form"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. System Prompts",
+			"item": [
+				{
+					"name": "GET /ai/system - Tutor",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/system?userInput=What is RAG",
+							"host": ["localhost:8080"],
+							"path": ["ai", "system"],
+							"query": [
+								{
+									"key": "userInput",
+									"value": "What is RAG"
+								}
+							]
+						},
+						"description": "Chat with tutor persona - concise, Java examples"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /ai/pirate - Pirate Persona",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/pirate?userInput=Tell me about Spring",
+							"host": ["localhost:8080"],
+							"path": ["ai", "pirate"],
+							"query": [
+								{
+									"key": "userInput",
+									"value": "Tell me about Spring"
+								}
+							]
+						},
+						"description": "Chat with pirate persona - different ChatClient bean"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Prompt Templates",
+			"item": [
+				{
+					"name": "GET /ai/template",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/template?topic=embeddings&level=junior",
+							"host": ["localhost:8080"],
+							"path": ["ai", "template"],
+							"query": [
+								{
+									"key": "topic",
+									"value": "embeddings"
+								},
+								{
+									"key": "level",
+									"value": "junior"
+								}
+							]
+						},
+						"description": "StringTemplate placeholders {topic} and {level} replaced at call time"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Streaming",
+			"item": [
+				{
+					"name": "GET /ai/stream",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/stream?userInput=Write a short poem",
+							"host": ["localhost:8080"],
+							"path": ["ai", "stream"],
+							"query": [
+								{
+									"key": "userInput",
+									"value": "Write a short poem"
+								}
+							]
+						},
+						"description": "Streaming responses - SSE with Flux<String>. Use curl -N for streaming output."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. ChatResponse Metadata",
+			"item": [
+				{
+					"name": "GET /ai/meta",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/meta?userInput=Hello",
+							"host": ["localhost:8080"],
+							"path": ["ai", "meta"],
+							"query": [
+								{
+									"key": "userInput",
+									"value": "Hello"
+								}
+							]
+						},
+						"description": "Token usage, model name, and rate limits from ChatResponse metadata"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Structured Output",
+			"item": [
+				{
+					"name": "GET /ai/structured - Basic",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/structured",
+							"host": ["localhost:8080"],
+							"path": ["ai", "structured"]
+						},
+						"description": "Map LLM output to Java record ActorFilms(String actor, List<String> movies)"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /ai/structured/list - List Response",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/structured/list",
+							"host": ["localhost:8080"],
+							"path": ["ai", "structured", "list"]
+						},
+						"description": "List response requires ParameterizedTypeReference for generics"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /ai/structured/strict - Reliability Switches",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/structured/strict",
+							"host": ["localhost:8080"],
+							"path": ["ai", "structured", "strict"]
+						},
+						"description": "useProviderStructuredOutput() + validateSchema() for flaky models"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "7. Multimodality",
+			"item": [
+				{
+					"name": "GET /ai/image",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/image",
+							"host": ["localhost:8080"],
+							"path": ["ai", "image"]
+						},
+						"description": "Send text + image (multimodal.test.png). Uses Media and MimeTypeUtils.IMAGE_PNG"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "8. Tool Calling",
+			"item": [
+				{
+					"name": "GET /ai/tool/time - Current Time",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/tool/time",
+							"host": ["localhost:8080"],
+							"path": ["ai", "tool", "time"]
+						},
+						"description": "Calls DateTimeTools.now() - model decides when to call tool"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /ai/tool/arithmetic - Add Hours",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/tool/arithmetic",
+							"host": ["localhost:8080"],
+							"path": ["ai", "tool", "arithmetic"]
+						},
+						"description": "Calls DateTimeTools.addHours() with parameters"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "9. Chat Memory",
+			"item": [
+				{
+					"name": "GET /ai/chat - Converse",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/chat?conversationId=demo-1&userInput=My name is Iranna",
+							"host": ["localhost:8080"],
+							"path": ["ai", "chat"],
+							"query": [
+								{
+									"key": "conversationId",
+									"value": "demo-1"
+								},
+								{
+									"key": "userInput",
+									"value": "My name is Iranna"
+								}
+							]
+						},
+						"description": "Multi-turn conversation. Same conversationId = same session. Try: 'What is my name?' after setting name."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /ai/chat/messages - Inspect",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/chat/messages?conversationId=demo-1",
+							"host": ["localhost:8080"],
+							"path": ["ai", "chat", "messages"],
+							"query": [
+								{
+									"key": "conversationId",
+									"value": "demo-1"
+								}
+							]
+						},
+						"description": "Inspect stored messages for a conversation"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /ai/chat/clear - Clear",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/chat/clear?conversationId=demo-1",
+							"host": ["localhost:8080"],
+							"path": ["ai", "chat", "clear"],
+							"query": [
+								{
+									"key": "conversationId",
+									"value": "demo-1"
+								}
+							]
+						},
+						"description": "Clear all messages for a conversation"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "10. Advisors",
+			"item": [
+				{
+					"name": "Note: Advisors are configuration",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080",
+							"host": ["localhost:8080"]
+						},
+						"description": "Advisors are configured in ChatClientConfig.java, not called directly. SimpleLoggerAdvisor logs all requests/responses."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "11. Embeddings",
+			"item": [
+				{
+					"name": "GET /ai/embed - Single Text",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/embed?text=Spring%20AI",
+							"host": ["localhost:8080"],
+							"path": ["ai", "embed"],
+							"query": [
+								{
+									"key": "text",
+									"value": "Spring AI"
+								}
+							]
+						},
+						"description": "Embed a single text into a float[] vector"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /ai/embed/batch - Batch Embed",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/embed/batch?a=Spring&b=AI",
+							"host": ["localhost:8080"],
+							"path": ["ai", "embed", "batch"],
+							"query": [
+								{
+									"key": "a",
+									"value": "Spring"
+								},
+								{
+									"key": "b",
+									"value": "AI"
+								}
+							]
+						},
+						"description": "Embed multiple texts at once with embedForResponse()"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /ai/embed/similarity - Cosine Similarity",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/embed/similarity?a=cat&b=dog",
+							"host": ["localhost:8080"],
+							"path": ["ai", "embed", "similarity"],
+							"query": [
+								{
+									"key": "a",
+									"value": "cat"
+								},
+								{
+									"key": "b",
+									"value": "dog"
+								}
+							]
+						},
+						"description": "Calculate cosine similarity between two texts - semantic closeness without a vector store"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /ai/embed/faq - Semantic FAQ Search",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/embed/faq?q=How does search work",
+							"host": ["localhost:8080"],
+							"path": ["ai", "embed", "faq"],
+							"query": [
+								{
+									"key": "q",
+									"value": "How does search work"
+								}
+							]
+						},
+						"description": "Real-world use case: semantic FAQ search. Embeds query and finds most similar FAQ question using cosine similarity (no keyword matching needed)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "12. Vector Store + RAG",
+			"item": [
+				{
+					"name": "GET /ai/rag - Basic RAG",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/rag?q=What%20is%20RAG",
+							"host": ["localhost:8080"],
+							"path": ["ai", "rag"],
+							"query": [
+								{
+									"key": "q",
+									"value": "What is RAG"
+								}
+							]
+						},
+						"description": "Retrieve top 3 similar documents and include as context in prompt"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /ai/rag/filtered - Threshold Filter",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/rag/filtered?q=embeddings&threshold=0.7",
+							"host": ["localhost:8080"],
+							"path": ["ai", "rag", "filtered"],
+							"query": [
+								{
+									"key": "q",
+									"value": "embeddings"
+								},
+								{
+									"key": "threshold",
+									"value": "0.7"
+								}
+							]
+						},
+						"description": "RAG with similarity threshold - only use documents above certain score"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /ai/rag/debug - Inspect Documents",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/rag/debug?q=Spring%20AI",
+							"host": ["localhost:8080"],
+							"path": ["ai", "rag", "debug"],
+							"query": [
+								{
+									"key": "q",
+									"value": "Spring AI"
+								}
+							]
+						},
+						"description": "Debug endpoint - show what documents would be retrieved (id, score, text preview)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "13. Moderation",
+			"item": [
+				{
+					"name": "GET /ai/moderation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/moderation?text=This%20is%20a%20test",
+							"host": ["localhost:8080"],
+							"path": ["ai", "moderation"],
+							"query": [
+								{
+									"key": "text",
+									"value": "This is a test"
+								}
+							]
+						},
+						"description": "Detect unsafe content. Note: OpenRouter free tier may not support moderation - may need paid key."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "14. MCP",
+			"item": [
+				{
+					"name": "Note: MCP is server configuration",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080",
+							"host": ["localhost:8080"]
+						},
+						"description": "MCP requires adding spring-ai-starter-mcp-server dependency and configuring McpConfig.java. See SPRING_AI_TUTOR.md section 14."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "15. Observability",
+			"item": [
+				{
+					"name": "GET /actuator/health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/actuator/health",
+							"host": ["localhost:8080"],
+							"path": ["actuator", "health"]
+						},
+						"description": "Application health check"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /actuator/metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/actuator/metrics",
+							"host": ["localhost:8080"],
+							"path": ["actuator", "metrics"]
+						},
+						"description": "List all Micrometer metrics"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /actuator/ai-metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/actuator/ai-metrics",
+							"host": ["localhost:8080"],
+							"path": ["actuator", "ai-metrics"]
+						},
+						"description": "Custom Spring AI metrics - chat calls, errors, embedding calls, vector store calls"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "16. Evaluation",
+			"item": [
+				{
+					"name": "GET /ai/eval/relevancy - Answer Relevance",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/eval/relevancy?question=What%20is%20Java&answer=Java%20is%20a%20programming%20language",
+							"host": ["localhost:8080"],
+							"path": ["ai", "eval", "relevancy"],
+							"query": [
+								{
+									"key": "question",
+									"value": "What is Java"
+								},
+								{
+									"key": "answer",
+									"value": "Java is a programming language"
+								}
+							]
+						},
+						"description": "LLM-as-a-Judge: Is the answer addressing the question? Returns PASS/FAIL with reason."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /ai/eval/factcheck - Context Grounding",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ai/eval/factcheck?context=Spring%20AI%20is%20a%20framework%20by%20VMware&answer=Spring%20AI%20is%20a%20framework",
+							"host": ["localhost:8080"],
+							"path": ["ai", "eval", "factcheck"],
+							"query": [
+								{
+									"key": "context",
+									"value": "Spring AI is a framework by VMware"
+								},
+								{
+									"key": "answer",
+									"value": "Spring AI is a framework"
+								}
+							]
+						},
+						"description": "LLM-as-a-Judge: Is the answer supported by the context? Returns PASS/FAIL with reason."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

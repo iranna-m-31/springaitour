@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <defs>
+    <linearGradient id="embGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#10b981"/>
+      <stop offset="100%" style="stop-color:#06b6d4"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="400" fill="#0d1117"/>
+  <text x="400" y="40" text-anchor="middle" fill="#e6edf3" font-family="system-ui" font-size="18" font-weight="600">Embeddings & Similarity</text>
+
+  <!-- Input Text A -->
+  <rect x="50" y="80" width="200" height="100" rx="12" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2" filter="url(#shadow)"/>
+  <text x="150" y="110" text-anchor="middle" fill="#93c5fd" font-family="system-ui" font-size="13" font-weight="600">Text A</text>
+  <text x="150" y="135" text-anchor="middle" fill="#60a5fa" font-family="monospace" font-size="11">"Spring AI"</text>
+
+  <!-- Input Text B -->
+  <rect x="50" y="210" width="200" height="100" rx="12" fill="#78350f" stroke="#f59e0b" stroke-width="2" filter="url(#shadow)"/>
+  <text x="150" y="240" text-anchor="middle" fill="#fcd34d" font-family="system-ui" font-size="13" font-weight="600">Text B</text>
+  <text x="150" y="265" text-anchor="middle" fill="#fef3c7" font-family="monospace" font-size="11">"AI Framework"</text>
+
+  <!-- Embedding Model -->
+  <path d="M255 130 L305 130" stroke="url(#embGrad)" stroke-width="3" fill="none"/>
+  <rect x="310" y="80" width="180" height="230" rx="12" fill="#134e4a" stroke="#10b981" stroke-width="2" filter="url(#shadow)"/>
+  <text x="400" y="115" text-anchor="middle" fill="#6ee7b7" font-family="system-ui" font-size="13" font-weight="600">EmbeddingModel</text>
+  <text x="400" y="145" text-anchor="middle" fill="#d1fae5" font-family="monospace" font-size="10">embed("Spring AI")</text>
+  <text x="400" y="170" text-anchor="middle" fill="#d1fae5" font-family="monospace" font-size="10">embed("AI Framework")</text>
+  <text x="400" y="200" text-anchor="middle" fill="#d1fae5" font-family="monospace" font-size="10">→ float[1536]</text>
+  <text x="400" y="230" text-anchor="middle" fill="#d1fae5" font-family="monospace" font-size="10">→ float[1536]</text>
+  <text x="400" y="260" text-anchor="middle" fill="#d1fae5" font-family="monospace" font-size="10">cosineSimilarity(v1,v2)</text>
+  <text x="400" y="285" text-anchor="middle" fill="#34d399" font-family="monospace" font-size="11">0.87</text>
+
+  <!-- Vector -->
+  <path d="M495 130 L545 130" stroke="url(#embGrad)" stroke-width="3" fill="none"/>
+  <rect x="550" y="80" width="180" height="100" rx="12" fill="#1e293b" stroke="#64748b" stroke-width="2" filter="url(#shadow)"/>
+  <text x="640" y="110" text-anchor="middle" fill="#94a3b8" font-family="system-ui" font-size="12">Vector A</text>
+  <text x="640" y="140" text-anchor="middle" fill="#64748b" font-family="monospace" font-size="10">[0.1, -0.3, ...]</text>
+
+  <path d="M495 260 L545 260" stroke="url(#embGrad)" stroke-width="3" fill="none"/>
+  <rect x="550" y="210" width="180" height="100" rx="12" fill="#1e293b" stroke="#64748b" stroke-width="2" filter="url(#shadow)"/>
+  <text x="640" y="240" text-anchor="middle" fill="#94a3b8" font-family="system-ui" font-size="12">Vector B</text>
+  <text x="640" y="270" text-anchor="middle" fill="#64748b" font-family="monospace" font-size="10">[0.2, -0.1, ...]</text>
+
+  <!-- Use Cases -->
+  <rect x="550" y="285" width="180" height="100" rx="12" fill="#134e4a" stroke="#10b981" stroke-width="2" filter="url(#shadow)"/>
+  <text x="640" y="305" text-anchor="middle" fill="#6ee7b7" font-family="system-ui" font-size="12" font-weight="600">Use Cases</text>
+  <text x="640" y="330" text-anchor="middle" fill="#d1fae5" font-family="monospace" font-size="9">• Semantic Search</text>
+  <text x="640" y="345" text-anchor="middle" fill="#d1fae5" font-family="monospace" font-size="9">• RAG Retrieval</text>
+  <text x="640" y="360" text-anchor="middle" fill="#d1fae5" font-family="monospace" font-size="9">• Recommendations</text>
+
+  <!-- Labels -->
+  <text x="150" y="395" text-anchor="middle" fill="#10b981" font-family="system-ui" font-size="10" font-weight="600">INPUT</text>
+  <text x="400" y="395" text-anchor="middle" fill="#10b981" font-family="system-ui" font-size="10" font-weight="600">EMBED</text>
+  <text x="640" y="395" text-anchor="middle" fill="#06b6d4" font-family="system-ui" font-size="10" font-weight="600">VECTORS</text>
+</svg>

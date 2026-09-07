@@ -1,0 +1,8 @@
+{
+  "name": "springai-tutor",
+  "private": true,
+  "scripts": {
+    "build:ui": "cd springai-tutor-ui && npm run build",
+    "dev": "cd springai-tutor-ui && npm run dev"
+  }
+}
