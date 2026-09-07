@@ -55,8 +55,8 @@ test('should navigate through all features and test Try It buttons', async ({ pa
         // Click the button
         await button.click()
 
-        // Wait for loading state
-        await page.waitForSelector('.try-btn:has-text("Loading...")', { timeout: 5000 })
+        // Wait for loading state (or streaming "Stop" button)
+        await page.waitForSelector('.try-btn:has-text("Loading..."), .try-btn:has-text("◼ Stop")', { timeout: 5000 })
 
         // Wait for response to appear (either success or error)
         try {
