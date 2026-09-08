@@ -12,10 +12,16 @@ import org.springframework.context.annotation.Configuration;
  *  - default system prompt on the ChatClient
  *  - default advisors (logging)
  *  - multiple ChatClient beans with different personas
+ * See Spring AI reference: "ChatClient" section.
  */
 @Configuration
 public class ChatClientConfig {
 
+    /**
+     * @param builder the ChatClient builder injected by Spring Boot
+     * @return a ChatClient bean with a tutor persona and SimpleLoggerAdvisor
+     * See Spring AI reference: "ChatClient" section
+     */
     @Bean
     ChatClient tutorChatClient(ChatClient.Builder builder) {
         return builder
@@ -27,6 +33,11 @@ public class ChatClientConfig {
                 .build();
     }
 
+    /**
+     * @param builder the ChatClient builder injected by Spring Boot
+     * @return a ChatClient bean with a pirate persona (no default advisors)
+     * See Spring AI reference: "ChatClient" section
+     */
     @Bean
     ChatClient pirateChatClient(ChatClient.Builder builder) {
         return builder

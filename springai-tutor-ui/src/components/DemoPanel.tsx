@@ -16,9 +16,28 @@ function isStreamingFeature(feature: Feature): boolean {
   return /\/stream\b|Flux<|text\/event-stream/.test(feature.endpoint)
 }
 
+/** True if the feature is chat-memory (two-step guided flow). */
+function isChatMemory(feature: Feature): boolean {
+  return feature.id === 'chat-memory'
+}
+
+/** True if the feature has paramGroups (multiple endpoint groups, e.g. embeddings). */
+function hasParamGroups(feature: Feature): boolean {
+  return !!(feature.paramGroups && feature.paramGroups.length > 0)
+}
+
 /** Resolve the first concrete endpoint from a feature's "A | B | C" endpoint string. */
 function primaryEndpoint(endpoint: string): string {
   return endpoint.split('|')[0]?.trim().split(/\s+/).pop() ?? endpoint
+}
+
+/** True if the feature has no live endpoint (configuration-based). */
+function isConfigOnly(feature: Feature): boolean {
+  return feature.method === 'N/A'
+}
+
+function generateConversationId(): string {
+  return `demo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 export default function DemoPanel({ feature }: DemoPanelProps) {
@@ -41,6 +60,9 @@ export default function DemoPanel({ feature }: DemoPanelProps) {
     feature.params.forEach((p) => {
       initial[p.name] = p.defaultValue
     })
+    if (isChatMemory(feature)) {
+      initial.conversationId = generateConversationId()
+    }
     setParams(initial)
     setResponse(null)
     setError(null)
@@ -62,6 +84,7 @@ export default function DemoPanel({ feature }: DemoPanelProps) {
   }
 
   const handleTry = async () => {
+    if (isConfigOnly(feature)) return
     setLoading(true)
     setResponse(null)
     setError(null)
@@ -99,8 +122,15 @@ export default function DemoPanel({ feature }: DemoPanelProps) {
     // ----- Non-streaming path -----
     const { data, error: apiError } = await callApi(feature.method, endpoint, params)
     if (apiError) {
-      const fullMsg = apiError.message || `HTTP ${apiError.status}`
-      setError(fullMsg)
+      // Distinguish between network errors and API errors
+      if (!apiError.status || apiError.status >= 500) {
+        // Likely network/connection error or server error
+        setError(`Connection error: Unable to reach the backend server. Please ensure the Spring Boot application is running.`)
+      } else {
+        // Actual API error from the endpoint
+        const fullMsg = apiError.message || `HTTP ${apiError.status}`
+        setError(fullMsg)
+      }
     } else {
       setResponse(typeof data === 'string' ? data : JSON.stringify(data, null, 2))
     }
@@ -112,12 +142,67 @@ export default function DemoPanel({ feature }: DemoPanelProps) {
     streamAbortRef.current = null
   }
 
+  /**
+   * Handle the two-step chat memory flow:
+   * - Step 1: userInput - state a fact
+   * - Step 2: followUp - test recall
+   */
+  const handleStep = async (step: 'first' | 'second') => {
+    if (isConfigOnly(feature)) return
+    if (!isChatMemoryFeature) return
+
+    setLoading(true)
+    setResponse(null)
+    setError(null)
+
+    const endpoint = primaryEndpoint(feature.endpoint)
+    const { data, error: apiError } = step === 'first'
+      ? await callApi(feature.method, endpoint, { conversationId: params.conversationId, userInput: params.userInput })
+      : await callApi(feature.method, endpoint, { conversationId: params.conversationId, userInput: params.followUp ?? '' })
+
+    if (apiError) {
+      const fullMsg = apiError.message || `HTTP ${apiError.status}`
+      setError(fullMsg)
+    } else if (data) {
+      setResponse(typeof data === 'string' ? data : JSON.stringify(data, null, 2))
+    }
+    setLoading(false)
+  }
+
+  /**
+   * Handle a call from a paramGroup (e.g. embeddings single/similarity/faq).
+   * Sends only the specified params to the group's endpoint.
+   */
+  const handleParamGroupCall = async (group: { label: string; endpoint: string; paramNames: string[]; description: string }) => {
+    if (isConfigOnly(feature)) return
+    setLoading(true)
+    setResponse(null)
+    setError(null)
+
+    const groupParams: Record<string, string> = {}
+    group.paramNames.forEach((name) => {
+      groupParams[name] = params[name] ?? ''
+    })
+
+    const { data, error: apiError } = await callApi(feature.method, group.endpoint, groupParams)
+    if (apiError) {
+      const fullMsg = apiError.message || `HTTP ${apiError.status}`
+      setError(fullMsg)
+    } else if (data) {
+      setResponse(typeof data === 'string' ? data : JSON.stringify(data, null, 2))
+    }
+    setLoading(false)
+  }
+
+  const isConfigOnlyFeature = isConfigOnly(feature)
+  const isChatMemoryFeature = isChatMemory(feature)
+  const hasParamGroupsFeature = hasParamGroups(feature)
   const queryString = new URLSearchParams(params).toString()
   const baseEndpoint = primaryEndpoint(feature.endpoint)
   const fullUrl = `${baseEndpoint}?${queryString}`
 
   const showEmptyState =
-    !loading && !error && !response && feature.method !== 'N/A'
+    !loading && !error && !response && !isConfigOnlyFeature
   const showStreamingResponse = streaming && response !== null
 
   return (
@@ -173,35 +258,74 @@ export default function DemoPanel({ feature }: DemoPanelProps) {
           )
         })}
 
-        {feature.method === 'N/A' && (
-          <em>No parameters — this is a configuration-based feature.</em>
+        {isConfigOnlyFeature && (
+          <div className="config-only-notice">
+            <p>No live API call for this topic — see the code above.</p>
+          </div>
         )}
 
-        <div className="demo-form-actions">
-          {streaming ? (
-            <button
-              type="button"
-              className="try-btn try-btn--stop"
-              onClick={handleStop}
-            >
-              ◼ Stop
-            </button>
-          ) : (
+        {isChatMemoryFeature && (
+          <div className="demo-form-actions">
             <button
               type="button"
               className="try-btn"
-              onClick={handleTry}
-              disabled={loading || feature.method === 'N/A'}
+              onClick={() => handleStep('first')}
+              disabled={loading}
             >
-              {loading ? 'Loading...' : '▶ Try It'}
+              {loading ? 'Sending fact...' : 'Step 1: Send Fact'}
             </button>
-          )}
-        </div>
+            <button
+              type="button"
+              className="try-btn"
+              onClick={() => handleStep('second')}
+              disabled={loading}
+            >
+              {loading ? 'Asking follow-up...' : 'Step 2: Ask Follow-up'}
+            </button>
+          </div>
+        )}
+        {hasParamGroupsFeature && feature.paramGroups && (
+          <div className="demo-form-actions demo-form-actions--grouped">
+            {feature.paramGroups.map((group, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className="try-btn"
+                onClick={() => handleParamGroupCall(group)}
+                disabled={loading}
+              >
+                {loading ? 'Loading...' : group.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {!isConfigOnlyFeature && !isChatMemoryFeature && !hasParamGroupsFeature && (
+          <div className="demo-form-actions">
+            {streaming ? (
+              <button
+                type="button"
+                className="try-btn try-btn--stop"
+                onClick={handleStop}
+              >
+                ◼ Stop
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="try-btn"
+                onClick={handleTry}
+                disabled={loading}
+              >
+                {loading ? 'Loading...' : '▶ Try It'}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="demo-result">
-        <h4>Request</h4>
-        <CodeBlock language="bash" value={fullUrl} />
+        {!isConfigOnlyFeature && <h4>Request</h4>}
+        {!isConfigOnlyFeature && <CodeBlock language="bash" value={fullUrl} />}
 
         {loading && !response && <Skeleton lines={4} lastWidth="80%" />}
 
@@ -238,18 +362,31 @@ export default function DemoPanel({ feature }: DemoPanelProps) {
         )}
       </div>
 
-      {feature.example && (
+      {feature.example && !isConfigOnlyFeature && (
         <div className="demo-example">
           <h4>Example (curl)</h4>
           <CodeBlock language="bash" value={feature.example} />
         </div>
       )}
 
+      {feature.example && isConfigOnlyFeature && (
+        <div className="demo-example demo-example--reference">
+          <h4>Reference (not runnable)</h4>
+          <CodeBlock language="bash" value={feature.example} showCopy={false} />
+        </div>
+      )}
+
       {feature.notes && (
-        <div className="demo-notes">
+        <div className="demo-notes-top">
           <strong>Note:</strong> {feature.notes}
         </div>
       )}
+
+      <div className="demo-notes-bottom" style={{display: 'none'}}>
+        <div className="demo-notes">
+          <strong>Note:</strong> {feature.notes}
+        </div>
+      </div>
     </div>
   )
 }

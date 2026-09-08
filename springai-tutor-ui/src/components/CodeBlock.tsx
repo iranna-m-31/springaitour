@@ -5,14 +5,15 @@ import CopyButton from './CopyButton'
 interface CodeBlockProps {
   language: string
   value: string
+  showCopy?: boolean
 }
 
-export default function CodeBlock({ language, value }: CodeBlockProps) {
+export default function CodeBlock({ language, value, showCopy = true }: CodeBlockProps) {
   return (
     <div className="code-block">
       <div className="code-block-toolbar">
         <span className="code-block-lang">{language}</span>
-        <CopyButton value={value} label="Copy" />
+        {showCopy && <CopyButton value={value} label="Copy" />}
       </div>
       <SyntaxHighlighter
         language={language}

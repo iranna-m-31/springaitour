@@ -38,11 +38,21 @@ class TutorController {
     // 2. System prompt
     // ---------------------------------------------------------------------
 
+    /**
+     * @param userInput message to send to the tutor ChatClient
+     * @return response from the tutor-prefixed ChatClient
+     * See Spring AI reference: "ChatClient" section
+     */
     @GetMapping("/ai/system")
     String system(String userInput) {
         return tutor.prompt().user(userInput).call().content();
     }
 
+    /**
+     * @param userInput message to send to the pirate ChatClient
+     * @return response from the pirate-prefixed ChatClient
+     * See Spring AI reference: "ChatClient" section
+     */
     @GetMapping("/ai/pirate")
     String pirate(String userInput) {
         return pirate.prompt().user(userInput).call().content();
@@ -52,6 +62,12 @@ class TutorController {
     // 3. Prompt templates
     // ---------------------------------------------------------------------
 
+    /**
+     * @param topic the topic to explain
+     * @param level the target audience experience level
+     * @return a 3-line explanation in the specified tone
+     * See Spring AI reference: "Prompt Templates" section
+     */
     @GetMapping("/ai/template")
     String template(String topic, String level) {
         return tutor.prompt()
@@ -66,6 +82,11 @@ class TutorController {
     // 4. Streaming
     // ---------------------------------------------------------------------
 
+    /**
+     * @param userInput message to stream as tokens
+     * @return a Flux of token strings streamed in real-time
+     * See Spring AI reference: "Streaming" section
+     */
     @GetMapping("/ai/stream")
     Flux<String> stream(String userInput) {
         return tutor.prompt().user(userInput).stream().content();
@@ -75,6 +96,11 @@ class TutorController {
     // 5. ChatResponse metadata
     // ---------------------------------------------------------------------
 
+    /**
+     * @param userInput message to send
+     * @return Map with model, inputTokens, outputTokens, totalTokens, content
+     * See Spring AI reference: "ChatResponse" section
+     */
     @GetMapping("/ai/meta")
     Map<String, Object> meta(String userInput) {
         ChatResponse r = tutor.prompt().user(userInput).call().chatResponse();
@@ -95,6 +121,10 @@ class TutorController {
 
     record ActorFilms(String actor, List<String> movies) {}
 
+    /**
+     * @return an ActorFilms record populated by the LLM — no JSON parsing needed
+     * See Spring AI reference: "Structured Output" section
+     */
     @GetMapping("/ai/structured")
     ActorFilms structured() {
         return tutor.prompt()
@@ -103,7 +133,10 @@ class TutorController {
                 .entity(ActorFilms.class);
     }
 
-    /** A list response - requires ParameterizedTypeReference for generics. */
+    /**
+     * @return a list of ActorFilms records — uses ParameterizedTypeReference for generic types
+     * See Spring AI reference: "Structured Output" section
+     */
     @GetMapping("/ai/structured/list")
     List<ActorFilms> structuredList() {
         return tutor.prompt()
@@ -116,6 +149,8 @@ class TutorController {
      * Use the reliability switches - this is what you want when the model is
      * flaky. validateSchema() retries on parse failure; useProviderStructuredOutput()
      * asks the provider to enforce the schema at the API level.
+     * @return an ActorFilms record with provider-level schema enforcement
+     * See Spring AI reference: "Structured Output" section
      */
     @GetMapping("/ai/structured/strict")
     ActorFilms structuredStrict() {
@@ -131,6 +166,10 @@ class TutorController {
     // 7. Multimodality
     // ---------------------------------------------------------------------
 
+    /**
+     * @return a text description of the multimodal.test.png image
+     * See Spring AI reference: "Multimodality" section
+     */
     @GetMapping("/ai/image")
     String image() {
         var img = new ClassPathResource("multimodal.test.png");

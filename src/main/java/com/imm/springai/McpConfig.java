@@ -25,14 +25,24 @@ class McpConfig {
      * Add spring-ai-starter-mcp-server to the classpath and
      * these will be auto-exposed as MCP tools (stdio, SSE, or
      * streamable-HTTP protocol).
+     * See Spring AI reference: "MCP" section
      */
     static class McpTools {
 
+        /**
+         * @return current date and time in ISO format
+         * See Spring AI reference: "MCP" section
+         */
         @Tool(description = "Get the current date and time")
         String getDateTime() {
             return LocalDateTime.now().toString();
         }
 
+        /**
+         * @param city name of the city to get weather for
+         * @return a random weather report for the specified city
+         * See Spring AI reference: "MCP" section
+         */
         @Tool(description = "Get a random weather report for a city")
         String getWeather(String city) {
             Random random = new Random();

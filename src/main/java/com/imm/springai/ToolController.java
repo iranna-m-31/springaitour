@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Section 8 of the tutor guide - tool calling.
  *
- * Note: ToolCallingAdvisor is auto-registered by DefaultChatClient.
- * We just have to pass the tool instances via .tools(...).
+ * Exposes Java methods to the LLM so it decides when to call them.
+ * @Tool marks a method as callable; @ToolParam provides parameter hints.
+ * ToolCallingAdvisor runs the tool loop automatically.
+ * See Spring AI reference: "Tool Calling" section.
  */
 @RestController
 class ToolController {
@@ -21,6 +23,10 @@ class ToolController {
         this.dateTimeTools = dateTimeTools;
     }
 
+    /**
+     * @return the current time as reported by the LLM using the injected DateTimeTools bean
+     * See Spring AI reference: "Tool Calling" section
+     */
     @GetMapping("/ai/tool/time")
     String whatTimeIsIt() {
         return tutor.prompt()
@@ -30,6 +36,10 @@ class ToolController {
                 .content();
     }
 
+    /**
+     * @return the result of adding three hours to the hardcoded time via DateTimeTools
+     * See Spring AI reference: "Tool Calling" section
+     */
     @GetMapping("/ai/tool/arithmetic")
     String addThreeHours() {
         return tutor.prompt()

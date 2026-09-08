@@ -7,6 +7,7 @@ import CallLogPage from './components/CallLogPage'
 import PlaygroundPage from './components/PlaygroundPage'
 import HomePage from './components/HomePage'
 import IntroductionPage from './components/IntroductionPage'
+import CompletionPage from './components/CompletionPage'
 import { features } from './data/features'
 
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="playground" element={<PlaygroundPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
+        <Route path="completion" element={<CompletionPage />} />
       </Routes>
     </BrowserRouter>
   )

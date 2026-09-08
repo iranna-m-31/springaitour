@@ -21,12 +21,17 @@ import java.util.zip.ZipOutputStream;
  * Excludes:
  *   - .git, build/, .gradle/, node_modules/, dist/
  *   - .tsbuildinfo, .lock files
+ * See Spring AI reference: "Project Structure" section.
  */
 @RestController
 class DownloadController {
 
     private static final String EXCLUDE_PREFIX = ".git" + File.separator;
 
+    /**
+     * @return the entire project as a ZIP file for download
+     * See Spring AI reference: "Project Structure" section
+     */
     @GetMapping("/download")
     ResponseEntity<byte[]> download() {
         try {

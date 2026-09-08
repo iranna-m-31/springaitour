@@ -18,6 +18,7 @@ import java.util.Map;
  *
  * Metrics are available at /actuator/metrics and /actuator/prometheus.
  * This adds a custom /actuator/ai-metrics endpoint for a quick overview.
+ * See Spring AI reference: "Observability" section.
  */
 @Configuration
 class ObservabilityConfig {
@@ -30,12 +31,19 @@ class ObservabilityConfig {
      * - spring.ai.embedding.calls (count)
      * - spring.ai.vector.store.calls (count)
      * - token usage histograms
+     * @param registry the Micrometer MeterRegistry for reading counters
+     * @return a SpringAiMetricsEndpoint registered at /actuator/ai-metrics
+     * See Spring AI reference: "Observability" section
      */
     @Bean
     SpringAiMetricsEndpoint springAiMetricsEndpoint(MeterRegistry registry) {
         return new SpringAiMetricsEndpoint(registry);
     }
 
+    /**
+     * @Endpoint exposing Spring AI metrics via Actuator.
+     * See Spring AI reference: "Observability" section.
+     */
     @Endpoint(id = "aimetrics")
     static class SpringAiMetricsEndpoint {
 
@@ -45,6 +53,10 @@ class ObservabilityConfig {
             this.registry = registry;
         }
 
+        /**
+         * @return Map with chatCalls, chatErrors, embeddingCalls, vectorStoreCalls
+         * See Spring AI reference: "Observability" section
+         */
         @ReadOperation
         Map<String, Object> metrics() {
             var result = new LinkedHashMap<String, Object>();

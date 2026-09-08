@@ -14,9 +14,10 @@ import java.util.Optional;
 /**
  * Section 13 of the tutor guide - Moderation.
  *
- * ModerationModel detects unsafe/harmful content. Most providers (OpenAI,
- * Mistral) ship moderation models. OpenRouter's free tier may not support
- * it — the call will return a "not found" error gracefully.
+ * Demonstrates ModerationModel to detect unsafe/harmful content.
+ * Most providers ship moderation models. OpenRouter's free tier may not support
+ * it — this endpoint gracefully returns a "not available" message instead of crashing.
+ * See Spring AI reference: "Moderation" section.
  */
 @RestController
 class ModerationController {
@@ -27,6 +28,11 @@ class ModerationController {
         this.moderationModel = moderationModel;
     }
 
+    /**
+     * @param text text to check for harmful content
+     * @return flagged boolean, categories, categoryScores, or note about unavailability for this provider
+     * See Spring AI reference: "Moderation" section
+     */
     @GetMapping("/ai/moderation")
     Map<String, Object> moderate(@RequestParam String text) {
         try {

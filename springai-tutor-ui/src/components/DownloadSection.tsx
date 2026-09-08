@@ -7,7 +7,8 @@ export default function DownloadSection() {
   const handleDownload = async () => {
     setDownloading(true)
     try {
-      const response = await fetch('/download')
+      // Point to GitHub's static archive URL instead of backend endpoint
+      const response = await fetch('https://github.com/iranna-m-31/springaitour/archive/refs/heads/main.zip')
       if (response.ok) {
         const blob = await response.blob()
         const url = window.URL.createObjectURL(blob)
@@ -19,10 +20,10 @@ export default function DownloadSection() {
         document.body.removeChild(a)
         window.URL.revokeObjectURL(url)
       } else {
-        alert('Download failed — make sure the server is running.')
+        alert('Download failed — unable to fetch from GitHub.')
       }
     } catch {
-      alert('Download failed — make sure the server is running.')
+      alert('Download failed — unable to fetch from GitHub.')
     }
     setDownloading(false)
   }

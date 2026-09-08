@@ -14,6 +14,13 @@ export interface ParamDef {
   optionValues?: string[]
 }
 
+export interface ParamGroup {
+  label: string
+  endpoint: string
+  paramNames: string[]
+  description: string
+}
+
 export interface Feature {
   id: string
   number: number
@@ -27,6 +34,7 @@ export interface Feature {
   notes?: string
   concepts?: string[]
   requiresDocker?: boolean
+  dockerOptional?: boolean
   requiresPaidKey?: boolean
   sourceFiles?: string[]
   /** Module this feature belongs to */
@@ -39,6 +47,8 @@ export interface Feature {
   diagram?: {
     layers: Array<{ label: string; boxes: Array<{ text: string; type: 'app' | 'spring' | 'provider' }> }>
   }
+  /** Split params into groups that call different endpoints (e.g. for embeddings) */
+  paramGroups?: ParamGroup[]
 }
 
 export type ModuleId = 'foundations' | 'core' | 'advanced' | 'specialized'
@@ -247,7 +257,7 @@ export const features: Feature[] = [
     example: 'curl "http://localhost:8080/ai/image"',
     responseHint: 'Text description of the image',
     concepts: ['Media', 'MimeTypeUtils', 'vision'],
-    notes: 'Requires src/main/resources/multimodal.test.png',
+    notes: 'Note: Requires src/main/resources/multimodal.test.png — this prerequisite must be present before clicking Try It.',
     sourceFiles: ['com/imm/springai/TutorController.java'],
     image: '/images/features/multimodality.svg',
   },
@@ -279,17 +289,25 @@ export const features: Feature[] = [
     endpoint: 'GET /ai/chat  |  GET /ai/chat/messages  |  GET /ai/chat/clear',
     method: 'GET',
     params: [
-      { name: 'conversationId', label: 'Conversation ID', defaultValue: 'demo-1', placeholder: 'e.g. demo-1', description: 'Unique conversation identifier' },
+      { name: 'conversationId', label: 'Conversation ID', defaultValue: '', placeholder: 'Auto-generated on load', description: 'Unique conversation identifier (auto-generated)' },
       {
         name: 'userInput',
-        label: 'User Input',
-        defaultValue: 'My name is Iranna. What is my name?',
-        placeholder: 'Enter your message',
-        description: 'Message to send in this turn',
+        label: 'Step 1: Tell the model a fact',
+        defaultValue: 'My name is Iranna.',
+        placeholder: 'Enter a fact for the model to remember',
+        description: 'First message - state a fact the model should remember',
+        kind: 'textarea',
+      },
+      {
+        name: 'followUp',
+        label: 'Step 2: Ask a follow-up question',
+        defaultValue: 'What is my name?',
+        placeholder: 'Ask a question testing recall',
+        description: 'Second message - test if the model remembers',
         kind: 'textarea',
       },
     ],
-    example: 'curl "http://localhost:8080/ai/chat?conversationId=demo-1&userInput=My%20name%20is%20Iranna"\ncurl "http://localhost:8080/ai/chat/messages?conversationId=demo-1"',
+    example: 'curl "http://localhost:8080/ai/chat?conversationId=demo-1&userInput=My%20name%20is%20Iranna"\ncurl "http://localhost:8080/ai/chat?conversationId=demo-1&userInput=What%20is%20my%20name%3F"',
     responseHint: 'Response text, or list of stored messages',
     concepts: ['ChatMemory', 'CONVERSATION_ID', 'message history'],
     sourceFiles: ['com/imm/springai/MemoryConfig.java', 'com/imm/springai/MemoryController.java'],
@@ -328,7 +346,12 @@ export const features: Feature[] = [
       { name: 'b', label: 'Text B', defaultValue: 'AI', placeholder: 'Second text', description: 'Second text for similarity' },
       { name: 'q', label: 'Query', defaultValue: 'How does search work', placeholder: 'Search query', description: 'Query for semantic FAQ search' },
     ],
-    example: 'curl "http://localhost:8080/ai/embed?text=Spring%20AI"\ncurl "http://localhost:8080/ai/embed/batch?a=Spring&b=AI"\ncurl "http://localhost:8080/ai/embed/similarity?a=cat&b=dog"\ncurl "http://localhost:8080/ai/embed/faq?q=How%20does%20search%20work"',
+    paramGroups: [
+      { label: 'Single embedding', endpoint: '/ai/embed', paramNames: ['text'], description: 'Call /ai/embed with a single text value' },
+      { label: 'Similarity comparison', endpoint: '/ai/embed/similarity', paramNames: ['a', 'b'], description: 'Call /ai/embed/similarity with Text A and Text B' },
+      { label: 'Semantic FAQ search', endpoint: '/ai/embed/faq', paramNames: ['q'], description: 'Call /ai/embed/faq with a query to find semantically similar FAQ entries' },
+    ],
+    example: 'curl "http://localhost:8080/ai/embed?text=Spring%20AI"\ncurl "http://localhost:8080/ai/embed/similarity?a=cat&b=dog"\ncurl "http://localhost:8080/ai/embed/faq?q=How%20does%20search%20work"',
     responseHint: 'float[] vector, batch metadata, cosine similarity score, or FAQ search results',
     concepts: ['EmbeddingModel', '.embed()', 'cosineSimilarity', 'SimpleVectorStore'],
     sourceFiles: ['com/imm/springai/EmbeddingController.java'],
@@ -348,10 +371,15 @@ export const features: Feature[] = [
       { name: 'q', label: 'Query', defaultValue: 'What is RAG', placeholder: 'Search query', description: 'Question to search documents for' },
       { name: 'threshold', label: 'Threshold', defaultValue: '0.7', placeholder: 'e.g. 0.7', description: 'Minimum similarity score (for filtered endpoint)' },
     ],
+    paramGroups: [
+      { label: 'Basic RAG', endpoint: '/ai/rag', paramNames: ['q'], description: 'Call /ai/rag to get an answer based on top-3 retrieved documents' },
+      { label: 'Filtered RAG', endpoint: '/ai/rag/filtered', paramNames: ['q', 'threshold'], description: 'Call /ai/rag/filtered with a similarity threshold filter' },
+      { label: 'Debug', endpoint: '/ai/rag/debug', paramNames: ['q'], description: 'Call /ai/rag/debug to see which documents would be retrieved' },
+    ],
     example: 'curl "http://localhost:8080/ai/rag?q=What%20is%20RAG"\ncurl "http://localhost:8080/ai/rag/filtered?q=embeddings&threshold=0.7"\ncurl "http://localhost:8080/ai/rag/debug?q=Spring%20AI"',
     responseHint: 'Answer based on retrieved context, or document debug info',
     concepts: ['DocumentReader', 'TokenTextSplitter', 'VectorStore', 'similaritySearch', 'Qdrant', 'PGVector'],
-    requiresDocker: true,
+    dockerOptional: true,
     sourceFiles: ['com/imm/springai/RagConfig.java', 'com/imm/springai/RagController.java'],
     image: '/images/features/rag.svg',
     diagram: {

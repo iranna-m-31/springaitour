@@ -6,7 +6,7 @@ import type { HealthStatus } from '../api/health'
 import Skeleton from './Skeleton'
 
 /** Simple progress tracker using localStorage */
-function useProgress() {
+export function useProgress() {
   const [completed, setCompleted] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem('spring-ai-tutor-progress')

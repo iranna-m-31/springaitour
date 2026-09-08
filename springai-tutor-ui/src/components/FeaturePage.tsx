@@ -5,8 +5,9 @@ import DemoPanel from './DemoPanel'
 import SetupBanner from './SetupBanner'
 import InPageNav from './InPageNav'
 import Skeleton from './Skeleton'
-import { modules } from '../data/features'
+import { features, modules } from '../data/features'
 import type { Feature } from '../data/features'
+import { useProgress } from './HomePage'
 
 interface FeaturePageProps {
   feature: Feature
@@ -43,7 +44,15 @@ export default function FeaturePage({ feature }: FeaturePageProps) {
   ]
 
   const isFirstFeature = feature.number === 1
+  const isLastFeature = feature.number === 16
   const module = modules.find(m => m.id === feature.module)
+
+  // Progress tracking + adjacent feature navigation
+  const { completed, toggle } = useProgress()
+  const allFeatures = features
+  const prevFeature = allFeatures.find(f => f.number === feature.number - 1)
+  const nextFeature = allFeatures.find(f => f.number === feature.number + 1)
+  const isCompleted = completed.has(feature.id)
 
   return (
     <div className="feature-page" ref={contentRef}>
@@ -140,10 +149,51 @@ export default function FeaturePage({ feature }: FeaturePageProps) {
             </span>
           </p>
           <div className="progress-bar" style={{ height: '6px' }}>
-            <div className="progress-fill" style={{ width: '100%' }} />
+            <div className="progress-fill" style={{ width: `${(feature.number / 16) * 100}%` }} />
           </div>
         </section>
       )}
+
+      {/* Bottom navigation bar */}
+      <nav className="feature-nav-bottom" aria-label="Feature navigation">
+        <div className="feature-nav-bottom-left">
+          <label className="mark-complete-check">
+            <input
+              type="checkbox"
+              checked={isCompleted}
+              onChange={() => toggle(feature.id)}
+            />
+            <span>Mark as complete</span>
+          </label>
+        </div>
+        <div className="feature-nav-bottom-right">
+          <button
+            type="button"
+            className="nav-prev"
+            disabled={isFirstFeature}
+            onClick={() => { if (prevFeature) window.location.href = `/feature/${prevFeature.id}` }}
+          >
+            ← {isFirstFeature ? 'Start' : 'Previous'}
+          </button>
+          {!isLastFeature ? (
+            <button
+              type="button"
+              className="nav-next"
+              onClick={() => { toggle(feature.id); window.location.href = `/feature/${nextFeature!.id}` }}
+            >
+              Next →
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="nav-next nav-next--completed"
+              onClick={() => { toggle(feature.id); window.location.href = '/completion' }}
+            >
+              🎓 Go to Completion
+            </button>
+          )}
+        </div>
+      </nav>
     </div>
   )
 }

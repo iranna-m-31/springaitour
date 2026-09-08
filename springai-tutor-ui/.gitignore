@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+.claude/
+
+# Test artifacts (Playwright screenshots, e2e results)
+test-results/

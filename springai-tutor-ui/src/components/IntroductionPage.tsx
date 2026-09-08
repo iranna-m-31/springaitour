@@ -80,6 +80,15 @@ export default function IntroductionPage() {
           <li><a href="https://docs.spring.io/spring-ai/reference/model/overview.html" target="_blank" rel="noreferrer">Models Overview →</a></li>
         </ul>
       </section>
+
+      <section className="intro-section" style={{ textAlign: 'center', marginTop: 'var(--space-10)' }}>
+        <Link to="/feature/plain-chat" className="btn btn-primary" style={{ fontSize: '1.125rem', padding: 'var(--space-4) var(--space-8)' }}>
+          🚀 Start Tutorial →
+        </Link>
+        <p style={{ marginTop: 'var(--space-3)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+          Begins with <strong>Plain Chat</strong> (Feature 1 of 16)
+        </p>
+      </section>
     </div>
   )
 }

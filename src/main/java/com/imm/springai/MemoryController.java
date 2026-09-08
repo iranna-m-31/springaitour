@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 /**
- * Section 9 - chat memory.
+ * Section 9 of the tutor guide - chat memory.
  *
- * Try a two-turn conversation with the same conversationId:
- *
- *   curl ".../ai/chat?conversationId=demo-1&userInput=My%20name%20is%20Iranna"
- *   curl ".../ai/chat?conversationId=demo-1&userInput=What%20is%20my%20name"
+ * Demonstrates how ChatMemory makes the model remember conversations across turns.
+ * Use conversationId to scope conversations. In production, swap InMemoryChatMemoryRepository
+ * for JdbcChatMemoryRepository.
+ * See Spring AI reference: "Chat Memory" section.
  */
 @RestController
 class MemoryController {
@@ -27,6 +27,12 @@ class MemoryController {
         this.chatMemory = chatMemory;
     }
 
+    /**
+     * @param conversationId unique conversation identifier
+     * @param userInput message to send in this turn
+     * @return the model's response, which may include information from previous turns in this conversation
+     * See Spring AI reference: "Chat Memory" section
+     */
     @GetMapping("/ai/chat")
     String chat(@RequestParam String conversationId, @RequestParam String userInput) {
         return memoryClient.prompt()
@@ -36,7 +42,11 @@ class MemoryController {
                 .content();
     }
 
-    /** Inspect the messages currently stored for a conversation. */
+    /**
+     * @param conversationId unique conversation identifier
+     * @return list of messages currently stored for this conversation (for inspection only)
+     * See Spring AI reference: "Chat Memory" section
+     */
     @GetMapping("/ai/chat/messages")
     Object messages(@RequestParam String conversationId) {
         return chatMemory.get(conversationId).stream()
@@ -46,7 +56,11 @@ class MemoryController {
                 .toList();
     }
 
-    /** Clear a conversation. */
+    /**
+     * @param conversationId unique conversation identifier to clear
+     * @return confirmation message indicating the conversation was cleared
+     * See Spring AI reference: "Chat Memory" section
+     */
     @GetMapping("/ai/chat/clear")
     String clear(@RequestParam String conversationId) {
         chatMemory.clear(conversationId);

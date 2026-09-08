@@ -18,10 +18,15 @@ import org.springframework.context.annotation.Configuration;
  *
  * For production: swap InMemoryChatMemoryRepository for the JDBC one
  * by adding spring-ai-starter-model-chat-memory-repository-jdbc.
+ * See Spring AI reference: "Chat Memory" section.
  */
 @Configuration
 class MemoryConfig {
 
+    /**
+     * @return an in-memory ChatMemory keeping the last 20 messages per conversation
+     * See Spring AI reference: "Chat Memory" section
+     */
     @Bean
     ChatMemory chatMemory() {
         return MessageWindowChatMemory.builder()
@@ -29,6 +34,12 @@ class MemoryConfig {
                 .build();
     }
 
+    /**
+     * @param builder the ChatClient builder injected by Spring Boot
+     * @param chatMemory the ChatMemory bean to wire in via MessageChatMemoryAdvisor
+     * @return a ChatClient bean with conversational memory enabled
+     * See Spring AI reference: "Chat Memory" section
+     */
     @Bean
     ChatClient memoryChatClient(ChatClient.Builder builder, ChatMemory chatMemory) {
         return builder

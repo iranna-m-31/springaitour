@@ -15,11 +15,9 @@ import java.util.stream.Collectors;
 /**
  * Section 12 of the tutor guide - RAG (Retrieval Augmented Generation).
  *
- * In Spring AI 2.0.1, RAG is implemented manually using VectorStoreRetriever:
- * 1. Retrieve relevant documents from the vector store
- * 2. Include them as context in the prompt
- *
- * This replaces the deprecated QuestionAnswerAdvisor pattern.
+ * Demonstrates the manual RAG pattern: retrieve relevant documents from a
+ * VectorStore, then include them as context in the LLM prompt.
+ * See Spring AI reference: "Vector Store" and "RAG" sections.
  */
 @RestController
 class RagController {
@@ -40,9 +38,9 @@ class RagController {
     }
 
     /**
-     * Simple RAG: retrieve documents and include in prompt.
-     *
-     * Try: curl "http://localhost:8080/ai/rag?q=What%20is%20RAG"
+     * @param q question to search documents for
+     * @return the LLM's answer based on the top 3 retrieved documents
+     * See Spring AI reference: "Vector Store" / "RAG" sections
      */
     @GetMapping("/ai/rag")
     String rag(@RequestParam String q) {
@@ -67,9 +65,10 @@ class RagController {
     }
 
     /**
-     * RAG with similarity threshold - only use documents above a certain score.
-     *
-     * Try: curl "http://localhost:8080/ai/rag/filtered?q=embeddings&threshold=0.7"
+     * @param q question to search documents for
+     * @param threshold minimum similarity score; documents below it are excluded
+     * @return the LLM's answer based on documents above the threshold, or a fallback message if none match
+     * See Spring AI reference: "Vector Store" / "similarityThreshold" sections
      */
     @GetMapping("/ai/rag/filtered")
     String ragFiltered(@RequestParam String q, @RequestParam(defaultValue = "0.7") double threshold) {
@@ -96,9 +95,9 @@ class RagController {
     }
 
     /**
-     * Debug endpoint: show what documents would be retrieved.
-     *
-     * Try: curl "http://localhost:8080/ai/rag/debug?q=Spring%20AI"
+     * @param q question to search documents for
+     * @return list of {id, score, text} maps for the top 3 retrieved documents (debug view)
+     * See Spring AI reference: "Vector Store" / "similaritySearch" sections
      */
     @GetMapping("/ai/rag/debug")
     Object ragDebug(@RequestParam String q) {

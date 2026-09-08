@@ -37,3 +37,7 @@ out/
 .vscode/
 
 .env
+### Test artifacts ###
+test-results/
+### Claude Code settings ###
+.claude/

@@ -41,16 +41,27 @@ export default function FeatureNav() {
     <nav className="feature-nav">
       <div className="sidebar-logo">
         <h2><span className="spring-icon">⬢</span>Spring AI Tutor</h2>
-        <button
-          type="button"
-          className="sidebar-search-trigger"
-          onClick={openSearch}
-          aria-label="Open search palette"
-          title="Search features (⌘K)"
-        >
-          <span>🔍 Search</span>
-          <kbd className="sidebar-search-kbd">{isMac ? '⌘' : 'Ctrl'}K</kbd>
-        </button>
+        <div className="sidebar-logo-actions">
+          <button
+            type="button"
+            className="sidebar-search-trigger"
+            onClick={openSearch}
+            aria-label="Open search palette"
+            title="Search features (⌘K)"
+          >
+            <span>🔍 Search</span>
+            <kbd className="sidebar-search-kbd">{isMac ? '⌘' : 'Ctrl'}K</kbd>
+          </button>
+          <button
+            type="button"
+            className="sidebar-settings-trigger"
+            onClick={() => goToPage('/settings')}
+            aria-label="Settings"
+            title="Settings (⌘,)"
+          >
+            ⚙️
+          </button>
+        </div>
       </div>
 
       <div className="sidebar-nav">
@@ -82,7 +93,8 @@ export default function FeatureNav() {
                     <span className="feature-number">{feature.number}</span>
                     <span className="feature-title">{feature.title}</span>
                     <span className="feature-badges">
-                      {feature.requiresDocker && <span className="badge badge-docker">🐳 Docker</span>}
+                      {feature.dockerOptional && <span className="badge badge-docker-optional">🐳 Docker (opt.)</span>}
+                      {feature.requiresDocker && !feature.dockerOptional && <span className="badge badge-docker">🐳 Docker</span>}
                       {feature.requiresPaidKey && <span className="badge badge-paid">🔑 Paid</span>}
                     </span>
                   </li>
@@ -109,10 +121,10 @@ export default function FeatureNav() {
           📋 Call Log
         </button>
         <button
-          className={`nav-link${isActive('/settings') ? ' active' : ''}`}
-          onClick={() => goToPage('/settings')}
+          className={`nav-link${isActive('/completion') ? ' active' : ''}`}
+          onClick={() => goToPage('/completion')}
         >
-          ⚙️ Settings
+          🎓 Completion
         </button>
         <button
           className={`nav-link nav-download${isActive('/download') ? ' active' : ''}`}

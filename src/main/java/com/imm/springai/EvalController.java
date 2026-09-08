@@ -19,6 +19,7 @@ import java.util.Map;
  *
  * For unit tests, mock the ChatModel directly. For end-to-end evaluation,
  * add spring-ai-spring-boot-testcontainers and use an Ollama container.
+ * See Spring AI reference: "Evaluation" section.
  */
 @RestController
 class EvalController {
@@ -30,8 +31,10 @@ class EvalController {
     }
 
     /**
-     * LLM-as-a-Judge: ask a second prompt "is this answer relevant?".
-     * The model's reply is parsed as a boolean.
+     * @param question the question being evaluated
+     * @param answer the answer to evaluate
+     * @return Map with question, answer, and verdict (PASS/FAIL with reason)
+     * See Spring AI reference: "Evaluation" section
      */
     @GetMapping("/ai/eval/relevancy")
     Map<String, Object> relevancy(String question, String answer) {
@@ -53,6 +56,12 @@ class EvalController {
         );
     }
 
+    /**
+     * @param context the reference context paragraph
+     * @param answer the answer to fact-check
+     * @return Map with context, answer, and verdict (PASS/FAIL with reason)
+     * See Spring AI reference: "Evaluation" section
+     */
     @GetMapping("/ai/eval/factcheck")
     Map<String, Object> factcheck(String context, String answer) {
         String verdict = judge.prompt()
