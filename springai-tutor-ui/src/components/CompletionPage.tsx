@@ -1,8 +1,13 @@
 import { Link } from 'react-router-dom'
 import { useProgress } from './HomePage'
+import { lessons, getPhaseProgress, getOverallStats } from '../data/lessons'
 
 export default function CompletionPage() {
   const { completed, percent, total } = useProgress()
+  const phaseProgress = getPhaseProgress(completed)
+  const overallStats = getOverallStats(completed)
+  const overallPercent = overallStats.percent
+  const totalLessons = overallStats.total
 
   const handleReset = () => {
     if (window.confirm('Reset all progress tracking? This will clear your completion marks.')) {
@@ -97,7 +102,62 @@ export default function CompletionPage() {
           <li>✅ Add circuit breakers & retry policies via Resilience4j</li>
           <li>✅ Implement structured logging with correlation IDs</li>
           <li>✅ Add automated eval pipelines for regression testing</li>
+          <li>✅ Configure MCP server for external tool integration</li>
         </ul>
+      </section>
+
+      {/* Knowledge Assessment */}
+      <section className="completion-assessment">
+        <h2>📝 Knowledge Assessment</h2>
+        <p>Test your understanding of Spring AI concepts. Ready to attempt the final challenge?</p>
+
+        <div className="assessment-results">
+          <div className="assessment-summary">
+            <div className="assessment-header">
+              <span className="assessment-title">Mastery by Phase</span>
+              <div className="assessment-progress">
+                {phaseProgress.map(p => (
+                  <div key={p.phaseId} className="assessment-phase-bar">
+                    <span className="assessment-phase-name">{p.phaseTitle}</span>
+                    <div className="assessment-phase-fill" style={{ width: `${p.percent}%` }} />
+                    <span className="assessment-phase-text">{p.completed}/{p.total} ({p.percent}%)</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="overall-score">
+              <h3>Overall Score: {overallPercent}%</h3>
+              <p>{completed.size} / {totalLessons} lessons completed</p>
+            </div>
+          </div>
+
+          <div className="assessment-details">
+            {phaseProgress.map((p) => (
+              <div key={p.phaseId} className="assessment-phase-detail">
+                <h4>{p.phaseTitle}</h4>
+                <p>{p.completed} of {p.total} lessons completed</p>
+                <div className="assessment-progress-bar">
+                  <div className="assessment-progress-fill" style={{ width: `${p.percent}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <button
+          className="btn btn-primary btn-block"
+          onClick={() => alert('Final knowledge assessment would be launched here. Attempt 10 questions testing all phases.')}>
+          Take Final Knowledge Assessment
+        </button>
+
+        {completed.size >= lessons.length * 0.8 && (
+          <div className="assessment-eligible">
+            <p>🎓 You're eligible for the final capstone! Your mastery exceeds 80% across all phases.</p>
+            <Link to="/capstone" className="btn btn-success btn-block">
+              Start Capstone Project →
+            </Link>
+          </div>
+        )}
       </section>
 
       <section className="completion-section">

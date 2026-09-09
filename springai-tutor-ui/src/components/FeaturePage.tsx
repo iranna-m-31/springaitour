@@ -5,6 +5,10 @@ import DemoPanel from './DemoPanel'
 import SetupBanner from './SetupBanner'
 import InPageNav from './InPageNav'
 import Skeleton from './Skeleton'
+import CodeDiff from './CodeDiff'
+import ArchitectureDiagram from './ArchitectureDiagram'
+import Checkpoint from './Checkpoint'
+import PrerequisitePanel from './PrerequisitePanel'
 import { features, modules } from '../data/features'
 import type { Feature } from '../data/features'
 import { useProgress } from './HomePage'
@@ -58,6 +62,9 @@ export default function FeaturePage({ feature }: FeaturePageProps) {
     <div className="feature-page" ref={contentRef}>
       <SetupBanner />
 
+      {/* Prerequisite awareness panel - shows before starting if prerequisites not met */}
+      <PrerequisitePanel lessonId={feature.id} prerequisites={[]} />
+
       <section className="feature-page-hero" id="overview-top">
         <div className="feature-page-header">
           <span className="feature-page-number">{feature.number}</span>
@@ -77,6 +84,38 @@ export default function FeaturePage({ feature }: FeaturePageProps) {
               <span key={c} className="concept-tag">{c}</span>
             ))}
           </div>
+        )}
+
+        {/* Architecture Diagram */}
+        {feature.architectureDiagram && (
+          <section className="architecture-section" style={{ marginTop: 'var(--space-8)' }}>
+            <h2>Architecture</h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-4)' }}>
+              Visualizing the Spring AI request lifecycle for this feature.
+              Click components to learn more about their role.
+            </p>
+            <ArchitectureDiagram
+              components={feature.architectureDiagram.components}
+              connections={feature.architectureDiagram.connections}
+            />
+          </section>
+        )}
+
+        {/* Code Diff: Before Spring AI vs With Spring AI */}
+        {feature.codeDiff && (
+          <section className="code-diff-section" style={{ marginTop: 'var(--space-8)' }}>
+            <h2>Before Spring AI vs With Spring AI</h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-4)' }}>
+              See how Spring AI simplifies the implementation compared to manual HTTP calls.
+            </p>
+            <CodeDiff
+              before={feature.codeDiff.before}
+              after={feature.codeDiff.after}
+              beforeTitle={feature.codeDiff.beforeTitle}
+              afterTitle={feature.codeDiff.afterTitle}
+              language="java"
+            />
+          </section>
         )}
 
         {/* Module context if this has one */}
@@ -151,6 +190,20 @@ export default function FeaturePage({ feature }: FeaturePageProps) {
           <div className="progress-bar" style={{ height: '6px' }}>
             <div className="progress-fill" style={{ width: `${(feature.number / 16) * 100}%` }} />
           </div>
+        </section>
+      )}
+
+      {/* Checkpoint - Test understanding at the end of each feature */}
+      {feature.checkpoint && (
+        <section className="checkpoint-section" style={{ marginTop: 'var(--space-8)', padding: 'var(--space-6)', background: 'var(--card-bg)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--card-border)' }}>
+          <h2>Check Your Understanding</h2>
+          <Checkpoint
+            type={feature.checkpoint.type}
+            question={feature.checkpoint.question}
+            options={feature.checkpoint.options?.map(opt => ({ label: opt, value: opt })) ?? []}
+            answer={feature.checkpoint.answer}
+            explanation={feature.checkpoint.explanation}
+          />
         </section>
       )}
 

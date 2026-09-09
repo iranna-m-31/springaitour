@@ -47,7 +47,32 @@ export interface Feature {
   diagram?: {
     layers: Array<{ label: string; boxes: Array<{ text: string; type: 'app' | 'spring' | 'provider' }> }>
   }
-  /** Split params into groups that call different endpoints (e.g. for embeddings) */
+  /** Code diff view: Before Spring AI vs With Spring AI */
+  codeDiff?: {
+    before: string
+    after: string
+    beforeTitle?: string
+    afterTitle?: string
+  }
+  /** Interactive architecture diagram with clickable components */
+  architectureDiagram?: {
+    components: Array<{
+      id: string
+      label: string
+      type: 'java' | 'ai' | 'inspector' | 'llm' | 'client' | 'app' | 'spring'
+      description: string
+    }>
+    connections: Array<{ from: string; to: string; label?: string }>
+  }
+  /** Checkpoint question at the end of the lesson */
+  checkpoint?: {
+    type: 'multiple-choice' | 'predict-output' | 'fix-code' | 'fill-blank'
+    question: string
+    options?: string[]
+    answer: string | string[]
+    explanation: string
+  }
+  /** Split params into groups that call different endpoints (e.g. embeddings) */
   paramGroups?: ParamGroup[]
 }
 
@@ -130,6 +155,52 @@ export const features: Feature[] = [
         { label: 'Model', boxes: [{ text: 'OpenRouter / OpenAI', type: 'provider' }] },
       ],
     },
+    codeDiff: {
+      before: "RestTemplate restTemplate = new RestTemplate();\nHttpHeaders headers = new HttpHeaders();\nheaders.setContentType(MediaType.APPLICATION_JSON);\n\nMap<String, Object> requestBody = new HashMap<>();\nrequestBody.put(\"model\", \"gpt-3.5-turbo\");\nrequestBody.put(\"messages\", List.of(\n    Map.of(\"role\", \"user\", \"content\", \"Tell me a joke\")\n));\n\nHttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);\nResponseEntity<String> response = restTemplate.exchange(\n    \"https://api.openai.com/v1/chat/completions\",\n    HttpMethod.POST,\n    request,\n    String.class\n);\n\nString joke = response.getBody();\n// Parse JSON to extract the joke from the response\n",
+      after: "@RestController\nclass ChatController {\n    private final ChatClient chatClient;\n    \n    public ChatController(ChatClient.Builder chatClientBuilder) {\n        this.chatClient = chatClientBuilder.build();\n    }\n    \n    @GetMapping(\"/ai\")\n    String generation(String userInput) {\n        return this.chatClient.prompt()\n            .user(userInput)\n            .call()\n            .content();\n    }\n}",
+      beforeTitle: "Before Spring AI (Manual HTTP)",
+      afterTitle: "With Spring AI ChatClient"
+    },
+    architectureDiagram: {
+      components: [
+        {
+          id: 'user',
+          label: 'User',
+          type: 'java',
+          description: 'The user sends a request to the application'
+        },
+        {
+          id: 'chatclient',
+          label: 'ChatClient',
+          type: 'ai',
+          description: 'Spring AI\'s fluent API for LLM interactions'
+        },
+        {
+          id: 'llm',
+          label: 'LLM Provider',
+          type: 'llm',
+          description: 'OpenAI, Anthropic, or other LLM provider'
+        }
+      ],
+      connections: [
+        { from: 'user', to: 'chatclient', label: 'HTTP Request' },
+        { from: 'chatclient', to: 'llm', label: 'LLM Call' },
+        { from: 'llm', to: 'chatclient', label: 'Response' },
+        { from: 'chatclient', to: 'user', label: 'HTTP Response' }
+      ]
+    },
+    checkpoint: {
+      type: 'multiple-choice',
+      question: 'What is the main advantage of using ChatClient over manual HTTP calls?',
+      options: [
+        'Better performance',
+        'Automatic JSON serialization/deserialization',
+        'Portable API that works with multiple LLM providers',
+        'Built-in caching'
+      ],
+      answer: 'Portable API that works with multiple LLM providers',
+      explanation: 'ChatClient provides a portable abstraction layer so your code works the same way regardless of which LLM provider you use (OpenAI, Anthropic, Azure, etc.).'
+    }
   },
   {
     id: 'system-prompts',
@@ -159,6 +230,52 @@ export const features: Feature[] = [
     concepts: ['ChatClient', 'defaultSystem', 'immutability'],
     sourceFiles: ['com/imm/springai/ChatClientConfig.java'],
     image: '/images/features/system-prompts.svg',
+    codeDiff: {
+      before: "// Without Spring AI: Each request needs manual system message\nMap<String, Object> requestBody = new HashMap<>();\nrequestBody.put(\"model\", \"gpt-3.5-turbo\");\nrequestBody.put(\"messages\", List.of(\n    Map.of(\"role\", \"system\", \"content\", \"You are a helpful tutor.\"),\n    Map.of(\"role\", \"user\", \"content\", \"What is RAG?\")\n));\n\n// For a pirate persona, you'd need separate code:\nMap<String, Object> pirateBody = new HashMap<>();\npirateBody.put(\"model\", \"gpt-3.5-turbo\");\npirateBody.put(\"messages\", List.of(\n    Map.of(\"role\", \"system\", \"content\", \"You are a pirate. Speak like one.\"),\n    Map.of(\"role\", \"user\", \"content\", \"What is RAG?\")\n));\n",
+      after: "@Configuration\nclass ChatClientConfig {\n    @Bean\n    ChatClient tutorChatClient(ChatClient.Builder builder) {\n        return builder\n            .defaultSystem(\"You are a helpful tutor.\")\n            .build();\n    }\n    \n    @Bean\n    ChatClient pirateChatClient(ChatClient.Builder builder) {\n        return builder\n            .defaultSystem(\"You are a pirate. Speak like one.\")\n            .build();\n    }\n}\n\n// Usage:\ntutor.prompt().user(\"What is RAG?\").call().content();\npirate.prompt().user(\"What is RAG?\").call().content();",
+      beforeTitle: "Before Spring AI (Manual System Messages)",
+      afterTitle: "With Spring AI ChatClient"
+    },
+    architectureDiagram: {
+      components: [
+        {
+          id: 'user',
+          label: 'User',
+          type: 'java',
+          description: 'Sends request with persona selection'
+        },
+        {
+          id: 'chatclient',
+          label: 'ChatClient Bean',
+          type: 'ai',
+          description: 'Immutable ChatClient with default system prompt'
+        },
+        {
+          id: 'llm',
+          label: 'LLM Provider',
+          type: 'llm',
+          description: 'Receives system + user messages'
+        }
+      ],
+      connections: [
+        { from: 'user', to: 'chatclient', label: 'Select Persona + Prompt' },
+        { from: 'chatclient', to: 'llm', label: 'System + User Messages' },
+        { from: 'llm', to: 'chatclient', label: 'Persona Response' },
+        { from: 'chatclient', to: 'user', label: 'HTTP Response' }
+      ]
+    },
+    checkpoint: {
+      type: 'multiple-choice',
+      question: 'Why are ChatClient beans considered immutable?',
+      options: [
+        'They cannot be modified after creation',
+        'They are final classes',
+        'They are singletons by default',
+        'They use record types'
+      ],
+      answer: 'They cannot be modified after creation',
+      explanation: 'ChatClient is built with a fluent builder pattern. Once .build() is called, the ChatClient instance is immutable — you cannot change its default system prompt, advisors, or options. To change behavior, you create a new ChatClient bean.'
+    }
   },
   {
     id: 'prompt-templates',
@@ -206,6 +323,46 @@ export const features: Feature[] = [
     notes: 'Requires spring-boot-starter-webflux on the classpath',
     sourceFiles: ['com/imm/springai/TutorController.java'],
     image: '/images/features/streaming.svg',
+    architectureDiagram: {
+      components: [
+        {
+          id: 'user',
+          label: 'User',
+          type: 'java',
+          description: 'Initiates streaming request'
+        },
+        {
+          id: 'chatclient',
+          label: 'ChatClient',
+          type: 'app',
+          description: 'Handles streaming response'
+        },
+        {
+          id: 'llm',
+          label: 'LLM',
+          type: 'llm',
+          description: 'Streams tokens as they are generated'
+        }
+      ],
+      connections: [
+        { from: 'user', to: 'chatclient', label: 'Stream Request' },
+        { from: 'chatclient', to: 'llm', label: 'Prompt' },
+        { from: 'llm', to: 'chatclient', label: 'Streaming Tokens' },
+        { from: 'chatclient', to: 'user', label: 'Streaming Response' }
+      ]
+    },
+    checkpoint: {
+      type: 'multiple-choice',
+      question: 'Why is streaming useful for long LLM responses?',
+      options: [
+        'It reduces the total response time',
+        'It allows the user to see output immediately instead of waiting for the full response',
+        'It reduces memory usage on the server',
+        'It enables compression of the response'
+      ],
+      answer: 'It allows the user to see output immediately instead of waiting for the full response',
+      explanation: 'With streaming, tokens are sent from the LLM to the user as soon as they are generated, providing immediate feedback rather than making the user wait for the entire response to be generated.'
+    }
   },
   {
     id: 'metadata',
@@ -277,6 +434,68 @@ export const features: Feature[] = [
     concepts: ['@Tool', '@ToolParam', 'ToolCallingAdvisor'],
     sourceFiles: ['com/imm/springai/DateTimeTools.java', 'com/imm/springai/ToolController.java'],
     image: '/images/features/tool-calling.svg',
+    architectureDiagram: {
+      components: [
+        {
+          id: 'user',
+          label: 'User',
+          type: 'java',
+          description: 'Asks a question requiring tool use'
+        },
+        {
+          id: 'chatclient',
+          label: 'ChatClient',
+          type: 'app',
+          description: 'Manages the tool calling loop'
+        },
+        {
+          id: 'llm',
+          label: 'LLM',
+          type: 'llm',
+          description: 'Decides which tool to call'
+        },
+        {
+          id: 'tools',
+          label: 'Tool Registry',
+          type: 'ai',
+          description: 'Your @Tool annotated methods'
+        },
+        {
+          id: 'java',
+          label: 'Java Method',
+          type: 'java',
+          description: 'Executes the actual logic'
+        }
+      ],
+      connections: [
+        { from: 'user', to: 'chatclient', label: 'Question' },
+        { from: 'chatclient', to: 'llm', label: 'Prompt + Tools' },
+        { from: 'llm', to: 'tools', label: 'Tool Call Request' },
+        { from: 'tools', to: 'java', label: 'Execute Method' },
+        { from: 'java', to: 'tools', label: 'Result' },
+        { from: 'tools', to: 'llm', label: 'Tool Result' },
+        { from: 'llm', to: 'chatclient', label: 'Final Answer' },
+        { from: 'chatclient', to: 'user', label: 'Response' }
+      ]
+    },
+    codeDiff: {
+      before: "// Without Spring AI: Manual tool calling logic\nMap<String, Object> requestBody = new HashMap<>();\nrequestBody.put(\"model\", \"gpt-4\");\nrequestBody.put(\"messages\", List.of(\n    Map.of(\"role\", \"user\", \"content\", \"What time is it?\")\n));\n// Define tools manually\nList<Map<String, Object>> tools = List.of(\n    Map.of(\n        \"type\", \"function\",\n        \"function\", Map.of(\n            \"name\", \"getCurrentTime\",\n            \"description\", \"Get the current time\",\n            \"parameters\", Map.of(\"type\", \"object\", \"properties\", new HashMap<>())\n        )\n    )\n);\nrequestBody.put(\"tools\", tools);\n// ... send request, parse tool call, execute Java method, send result back...\n",
+      after: "// With Spring AI: @Tool annotation does the heavy lifting\n@Tool(description = \"Get the current time\")\npublic String getCurrentTime() {\n    return LocalDateTime.now().toString();\n}\n\n// Register with ChatClient\nChatClient client = ChatClient.builder(chatModel)\n    .defaultTools(new DateTimeTools())\n    .build();\n\nString response = client.prompt()\n    .user(\"What time is it?\")\n    .call()\n    .content();\n// Spring AI handles the tool loop automatically\n",
+      beforeTitle: "Before Spring AI (Manual Tool Calling)",
+      afterTitle: "With Spring AI @Tool"
+    },
+    checkpoint: {
+      type: 'multiple-choice',
+      question: 'What happens when the LLM decides to call a tool?',
+      options: [
+        'The tool is executed and the result is sent back to the LLM for the final response',
+        'The tool result is returned directly to the user',
+        'The LLM stops and waits for user confirmation',
+        'The tool is called but the result is ignored'
+      ],
+      answer: 'The tool is executed and the result is sent back to the LLM for the final response',
+      explanation: 'Tool calling is a loop: LLM requests a tool call → your Java method executes → result goes back to LLM → LLM formulates final response. This happens automatically with ToolCallingAdvisor.'
+    }
   },
   {
     id: 'chat-memory',
@@ -312,6 +531,48 @@ export const features: Feature[] = [
     concepts: ['ChatMemory', 'CONVERSATION_ID', 'message history'],
     sourceFiles: ['com/imm/springai/MemoryConfig.java', 'com/imm/springai/MemoryController.java'],
     image: '/images/features/chat-memory.svg',
+    architectureDiagram: {
+      components: [
+        {
+          id: 'user',
+          label: 'User',
+          type: 'java',
+          description: 'Sends message in a conversation'
+        },
+        {
+          id: 'chatclient',
+          label: 'ChatClient',
+          type: 'app',
+          description: 'Manages conversation context'
+        },
+        {
+          id: 'memory',
+          label: 'ChatMemory',
+          type: 'ai',
+          description: 'Stores conversation history'
+        },
+        {
+          id: 'llm',
+          label: 'LLM',
+          type: 'llm',
+          description: 'Sees full conversation context'
+        }
+      ],
+      connections: [
+        { from: 'user', to: 'chatclient', label: 'Message' },
+        { from: 'chatclient', to: 'memory', label: 'Get History' },
+        { from: 'memory', to: 'llm', label: 'Context + New Message' },
+        { from: 'llm', to: 'chatclient', label: 'Response' },
+        { from: 'chatclient', to: 'memory', label: 'Store New' },
+        { from: 'chatclient', to: 'user', label: 'Response' }
+      ]
+    },
+    checkpoint: {
+      type: 'fill-blank',
+      question: 'ChatMemory makes the model remember across turns. What parameter is used to scope conversations?',
+      answer: 'conversationId',
+      explanation: 'The conversationId parameter uniquely identifies a conversation. All messages with the same conversationId are stored together, allowing the model to "remember" the context across multiple turns.'
+    }
   },
   {
     id: 'advisors',
@@ -329,6 +590,70 @@ export const features: Feature[] = [
     concepts: ['Advisor', 'SimpleLoggerAdvisor', 'ordering'],
     sourceFiles: ['com/imm/springai/ChatClientConfig.java'],
     image: '/images/features/advisors.svg',
+    architectureDiagram: {
+      components: [
+        {
+          id: 'user',
+          label: 'User',
+          type: 'java',
+          description: 'Sends request'
+        },
+        {
+          id: 'chatclient',
+          label: 'ChatClient',
+          type: 'app',
+          description: 'Main entry point'
+        },
+        {
+          id: 'advisor1',
+          label: 'Advisor 1',
+          type: 'ai',
+          description: 'Logging advisor'
+        },
+        {
+          id: 'advisor2',
+          label: 'Advisor N',
+          type: 'ai',
+          description: 'Memory / RAG advisor'
+        },
+        {
+          id: 'chatmodel',
+          label: 'ChatModel',
+          type: 'spring',
+          description: 'Core LLM call'
+        },
+        {
+          id: 'llm',
+          label: 'LLM',
+          type: 'llm',
+          description: 'Model provider'
+        }
+      ],
+      connections: [
+        { from: 'user', to: 'chatclient', label: 'Request' },
+        { from: 'chatclient', to: 'advisor1', label: 'Request' },
+        { from: 'advisor1', to: 'advisor2', label: 'Request' },
+        { from: 'advisor2', to: 'chatmodel', label: 'Request' },
+        { from: 'chatmodel', to: 'llm', label: 'LLM Call' },
+        { from: 'llm', to: 'chatmodel', label: 'Response' },
+        { from: 'chatmodel', to: 'advisor2', label: 'Response' },
+        { from: 'advisor2', to: 'advisor1', label: 'Response' },
+        { from: 'advisor1', to: 'chatclient', label: 'Response' },
+        { from: 'chatclient', to: 'user', label: 'Response' }
+      ]
+    },
+    checkpoint: {
+      type: 'multiple-choice',
+      question: 'How are Advisors ordered in Spring AI?',
+      options: [
+        'Like a stack - HIGHEST_PRECEDENCE runs first on request, last on response',
+        'Alphabetically by advisor name',
+        'In the order they are added to the bean',
+        'Randomly for each request'
+      ],
+      answer: 'Like a stack - HIGHEST_PRECEDENCE runs first on request, last on response',
+      explanation: 'Advisors wrap the chat call like middleware. The advisor with HIGHEST_PRECEDENCE runs first on the request (top of stack) and last on the response (bottom of stack), similar to Servlet Filters.'
+    }
   },
   {
     id: 'embeddings',
@@ -356,6 +681,52 @@ export const features: Feature[] = [
     concepts: ['EmbeddingModel', '.embed()', 'cosineSimilarity', 'SimpleVectorStore'],
     sourceFiles: ['com/imm/springai/EmbeddingController.java'],
     image: '/images/features/embeddings.svg',
+    architectureDiagram: {
+      components: [
+        {
+          id: 'text',
+          label: 'Text',
+          type: 'java',
+          description: 'Input text to embed'
+        },
+        {
+          id: 'embedding-model',
+          label: 'Embedding Model',
+          type: 'ai',
+          description: 'Converts text to vector'
+        },
+        {
+          id: 'vector-store',
+          label: 'Vector Store',
+          type: 'spring',
+          description: 'Stores all document vectors'
+        },
+        {
+          id: 'similarity',
+          label: 'Similarity Search',
+          type: 'spring',
+          description: 'Finds similar vectors'
+        }
+      ],
+      connections: [
+        { from: 'text', to: 'embedding-model', label: 'Text' },
+        { from: 'embedding-model', to: 'vector-store', label: 'Vector' },
+        { from: 'vector-store', to: 'similarity', label: 'Query' },
+        { from: 'similarity', to: 'text', label: 'Similar Results' }
+      ]
+    },
+    checkpoint: {
+      type: 'multiple-choice',
+      question: 'What does an embedding represent?',
+      options: [
+        'A Java byte array',
+        'A vector of numbers that captures semantic meaning',
+        'A compressed text string',
+        'A hash of the input text'
+      ],
+      answer: 'A vector of numbers that captures semantic meaning',
+      explanation: 'An embedding converts text into a vector of floats where similar meanings have similar vectors. This is why we can do semantic search - not keyword matching, but meaning matching.'
+    }
   },
   {
     id: 'rag',
@@ -390,6 +761,68 @@ export const features: Feature[] = [
         { label: 'Generate', boxes: [{ text: 'ChatClient + Context', type: 'app' }] },
       ],
     },
+    architectureDiagram: {
+      components: [
+        {
+          id: 'question',
+          label: 'User Question',
+          type: 'java',
+          description: 'The query from the user'
+        },
+        {
+          id: 'embedding',
+          label: 'Embedding Model',
+          type: 'ai',
+          description: 'Converts question to vector'
+        },
+        {
+          id: 'vectorstore',
+          label: 'Vector Store',
+          type: 'spring',
+          description: 'Stores document embeddings'
+        },
+        {
+          id: 'retriever',
+          label: 'Retriever',
+          type: 'spring',
+          description: 'Finds relevant documents'
+        },
+        {
+          id: 'chatclient',
+          label: 'ChatClient',
+          type: 'app',
+          description: 'Augments prompt with context'
+        },
+        {
+          id: 'llm',
+          label: 'LLM',
+          type: 'llm',
+          description: 'Generates answer'
+        }
+      ],
+      connections: [
+        { from: 'question', to: 'embedding', label: 'Text' },
+        { from: 'embedding', to: 'vectorstore', label: 'Vector' },
+        { from: 'vectorstore', to: 'retriever', label: 'Search' },
+        { from: 'retriever', to: 'chatclient', label: 'Relevant Docs' },
+        { from: 'chatclient', to: 'llm', label: 'Augmented Prompt' },
+        { from: 'llm', to: 'chatclient', label: 'Answer' },
+        { from: 'chatclient', to: 'question', label: 'Response' }
+      ]
+    },
+    codeDiff: {
+      before: "// Without RAG: The LLM has no access to your documents\nChatClient client = ChatClient.builder(chatModel).build();\nString answer = client.prompt()\n    .user(\"What is RAG?\")\n    .call()\n    .content();\n// The model only knows what it was trained on\n",
+      after: "// With RAG: The LLM gets relevant documents\nChatClient client = ChatClient.builder(chatModel)\n    .defaultAdvisors(\n        new QuestionAnswerAdvisor(retriever))\n    .build();\n\nString answer = client.prompt()\n    .user(\"What is RAG?\")\n    .call()\n    .content();\n// The model gets context from your documents\n",
+      beforeTitle: "Before RAG",
+      afterTitle: "With RAG"
+    },
+    checkpoint: {
+      type: 'predict-output',
+      question: 'What would happen if you call the RAG endpoint with a query that has no matching documents?',
+      options: ['An error is thrown', 'The LLM responds based on its training data', 'The response says "No documents found"', 'The vector store creates new documents'],
+      answer: 'The LLM responds based on its training data',
+      explanation: 'When no relevant documents are found, the retriever returns an empty list. The LLM still responds based on its training data, but the answer may not be grounded in your documents. This is why RAG is most effective when your question has relevant context.'
+    }
   },
   {
     id: 'moderation',
@@ -427,6 +860,48 @@ export const features: Feature[] = [
     concepts: ['MCP', 'spring-ai-starter-mcp', 'stdio'],
     sourceFiles: ['com/imm/springai/McpConfig.java'],
     image: '/images/features/mcp.svg',
+    architectureDiagram: {
+      components: [
+        {
+          id: 'user',
+          label: 'User',
+          type: 'java',
+          description: 'Interacts with MCP tools'
+        },
+        {
+          id: 'mcp-client',
+          label: 'MCP Client',
+          type: 'spring',
+          description: 'Spring AI MCP integration'
+        },
+        {
+          id: 'llm',
+          label: 'LLM',
+          type: 'llm',
+          description: 'Decides when to call tools'
+        },
+        {
+          id: 'stdio',
+          label: 'STDIO/SSE',
+          type: 'inspector',
+          description: 'Communication protocol'
+        }
+      ],
+      connections: [
+        { from: 'user', to: 'mcp-client', label: 'Request' },
+        { from: 'mcp-client', to: 'llm', label: 'Tool Call Decision' },
+        { from: 'llm', to: 'stdio', label: 'Tool Execution' },
+        { from: 'stdio', to: 'mcp-client', label: 'Tool Result' },
+        { from: 'mcp-client', to: 'user', label: 'Response' }
+      ]
+    },
+    checkpoint: {
+      type: 'multiple-choice',
+      question: 'What is MCP often called in the industry?',
+      options: ['The "USB-C for tools"', 'The "HTTP for AI"', 'The "JDBC for LLMs"', 'The "REST for agents"'],
+      answer: 'The "USB-C for tools"',
+      explanation: 'MCP (Model Context Protocol) is described as the "USB-C for tools" — a standard, universal connector that lets any LLM talk to any tool server, regardless of provider, much like USB-C works with any device.'
+    }
   },
   {
     id: 'observability',
@@ -444,6 +919,55 @@ export const features: Feature[] = [
     concepts: ['Micrometer', 'OpenTelemetry', 'actuator'],
     sourceFiles: ['com/imm/springai/ObservabilityConfig.java'],
     image: '/images/features/observability.svg',
+    architectureDiagram: {
+      components: [
+        {
+          id: 'user',
+          label: 'Application',
+          type: 'java',
+          description: 'Makes API calls'
+        },
+        {
+          id: 'chatmodel',
+          label: 'ChatModel',
+          type: 'spring',
+          description: 'AI operations'
+        },
+        {
+          id: 'micrometer',
+          label: 'Micrometer',
+          type: 'spring',
+          description: 'Tracing and metrics'
+        },
+        {
+          id: 'opentelemetry',
+          label: 'OpenTelemetry',
+          type: 'inspector',
+          description: 'Trace pipeline'
+        },
+        {
+          id: 'actuator',
+          label: 'Actuator',
+          type: 'spring',
+          description: 'Endpoints'
+        }
+      ],
+      connections: [
+        { from: 'user', to: 'chatmodel', label: 'AI Call' },
+        { from: 'chatmodel', to: 'micrometer', label: 'Span' },
+        { from: 'chatmodel', to: 'opentelemetry', label: 'Trace' },
+        { from: 'micrometer', to: 'actuator', label: 'Metrics' },
+        { from: 'opentelemetry', to: 'actuator', label: 'Traces' },
+        { from: 'actuator', to: 'user', label: 'Status/Metrics' }
+      ]
+    },
+    checkpoint: {
+      type: 'multiple-choice',
+      question: 'What does OpenTelemetry provide for Spring AI?',
+      options: ['Health checks only', 'Tracing and metrics instrumentation', 'Database connection pooling', 'Security filtering'],
+      answer: 'Tracing and metrics instrumentation',
+      explanation: 'OpenTelemetry provides tracing (showing the request flow through ChatModel, advisors, tool calls, etc.) and metrics (counting requests, token usage, latency, etc.). These are auto-instrumented by Spring AI.'
+    }
   },
   {
     id: 'evaluation',
@@ -465,6 +989,47 @@ export const features: Feature[] = [
     concepts: ['LLM-as-a-Judge', 'PASS/FAIL', 'mock(ChatModel)'],
     sourceFiles: ['com/imm/springai/EvalController.java'],
     image: '/images/features/evaluation.svg',
+    architectureDiagram: {
+      components: [
+        {
+          id: 'user',
+          label: 'Question',
+          type: 'java',
+          description: 'The question to evaluate'
+        },
+        {
+          id: 'judge',
+          label: 'LLM-as-a-Judge',
+          type: 'spring',
+          description: 'Evaluates the answer'
+        },
+        {
+          id: 'answer',
+          label: 'Answer',
+          type: 'java',
+          description: 'The answer to check'
+        },
+        {
+          id: 'context',
+          label: 'Context',
+          type: 'java',
+          description: 'Reference context'
+        }
+      ],
+      connections: [
+        { from: 'user', to: 'judge', label: 'Question + Answer' },
+        { from: 'judge', to: 'context', label: 'Context' },
+        { from: 'judge', to: 'answer', label: 'Verdict Generation' },
+        { from: 'judge', to: 'user', label: 'PASS/FAIL' }
+      ]
+    },
+    checkpoint: {
+      type: 'multiple-choice',
+      question: 'What is "LLM-as-a-Judge" in Spring AI 2.0?',
+      options: ['A new model provider', 'Using a second LLM to evaluate the first answer', 'A Java evaluator class', 'A testing framework'],
+      answer: 'Using a second LLM to evaluate the first answer',
+      explanation: 'Spring AI 2.0 replaced dedicated Evaluator classes with "LLM-as-a-Judge" — you ask a second prompt to evaluate the first answer. Two judges: relevancy (does the answer address the question?) and fact-check (is the answer supported by the context?).'
+    }
   },
 ] as const
 

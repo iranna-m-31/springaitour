@@ -56,7 +56,8 @@ test('should navigate through all features and test Try It buttons', async ({ pa
         await button.click()
 
         // Wait for loading state (or streaming "Stop" button)
-        await page.waitForSelector('.try-btn:has-text("Loading..."), .try-btn:has-text("◼ Stop")', { timeout: 5000 })
+        // Chat Memory features use custom button labels ("Sending fact...", "Asking follow-up...")
+        await page.waitForSelector('.try-btn:has-text("Loading..."), .try-btn:has-text("◼ Stop"), .try-btn:has-text("Sending fact..."), .try-btn:has-text("Asking follow-up...")', { timeout: 5000 })
 
         // Wait for response to appear (either success or error)
         try {

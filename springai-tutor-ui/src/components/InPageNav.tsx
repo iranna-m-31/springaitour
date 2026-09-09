@@ -25,7 +25,7 @@ export default function InPageNav({ tabs }: InPageNavProps) {
 
   // Find the page's main scroll container.
   useEffect(() => {
-    containerRef.current = document.querySelector('.feature-content')
+    containerRef.current = document.querySelector('.lesson-content')
   }, [])
 
   // Observe each section. The most-visible one wins.

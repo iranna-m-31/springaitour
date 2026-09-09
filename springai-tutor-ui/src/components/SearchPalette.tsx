@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { features } from '../data/features'
+import { lessons } from '../data/lessons'
 
 interface SearchResult {
   id: string
@@ -8,21 +9,67 @@ interface SearchResult {
   title: string
   description: string
   href: string
+  category: string
 }
 
 const ALL_RESULTS: SearchResult[] = [
-  { id: 'home', number: 0, title: 'Home', description: 'Quick start and server health check', href: '/' },
-  { id: 'introduction', number: 0, title: 'Introduction', description: 'What this app does and how to use it', href: '/introduction' },
-  { id: 'playground', number: 0, title: 'Playground', description: 'Freeform chat with personas and memory', href: '/playground' },
-  { id: 'settings', number: 0, title: 'Settings', description: 'Configuration and feature flags', href: '/settings' },
-  { id: 'call-log', number: 0, title: 'Call Log', description: 'History of API calls and responses', href: '/call-log' },
-  { id: 'download', number: 0, title: 'Download Project', description: 'Download the full Spring AI project as a ZIP', href: '/download' },
+  { id: 'home', number: 0, title: 'Home', description: 'Quick start and server health check', href: '/', category: 'Navigation' },
+  { id: 'introduction', number: 0, title: 'Introduction', description: 'What this app does and how to use it', href: '/introduction', category: 'Navigation' },
+  { id: 'playground', number: 0, title: 'Playground', description: 'Freeform chat with personas and memory', href: '/playground', category: 'Lab' },
+  { id: 'settings', number: 0, title: 'Settings', description: 'Configuration and feature flags', href: '/settings', category: 'Settings' },
+  { id: 'call-log', number: 0, title: 'Call Log', description: 'History of API calls and responses', href: '/call-log', category: 'Lab' },
+  { id: 'download', number: 0, title: 'Download Project', description: 'Download the full Spring AI project as a ZIP', href: '/download', category: 'Lab' },
+  { id: 'health-check', number: 0, title: 'Health Check', description: 'Verify local server and LLM connectivity', href: '/lab', category: 'Lab' },
+  // Feature-based results (legacy)
   ...features.map((f) => ({
     id: f.id,
     number: f.number,
     title: f.title,
     description: f.description,
     href: `/feature/${f.id}`,
+    category: 'Feature'
+  })),
+  // Lesson-based results
+  ...lessons.map((l) => ({
+    id: `lesson-${l.id}`,
+    number: l.number,
+    title: l.title,
+    description: `Phase: ${l.phase} · ${l.estimatedTime} min · ${l.difficulty}`,
+    href: `/lesson/${l.id}`,
+    category: 'Lesson'
+  })),
+  // Concept results
+  ...lessons.filter(l => l.phase === 'prerequisites').map(l => ({
+    id: `concept-${l.id}`,
+    number: l.number,
+    title: `${l.title} (Concept)`,
+    description: 'Concept explanation with Java analogies',
+    href: `/lesson/${l.id}`,
+    category: 'Concept'
+  })),
+  ...lessons.filter(l => l.phase === 'fundamentals').map(l => ({
+    id: `api-${l.id}`,
+    number: l.number,
+    title: `${l.title} (API)`,
+    description: 'Spring AI API and configuration',
+    href: `/lesson/${l.id}`,
+    category: 'API'
+  })),
+  ...lessons.filter(l => l.phase === 'models').map(l => ({
+    id: `code-${l.id}`,
+    number: l.number,
+    title: `${l.title} (Code)`,
+    description: 'Java implementation examples',
+    href: `/lesson/${l.id}`,
+    category: 'Code'
+  })),
+  ...lessons.filter(l => l.phase === 'production').map(l => ({
+    id: `runtime-${l.id}`,
+    number: l.number,
+    title: `${l.title} (Runtime)`,
+    description: 'Runtime behavior and deployment',
+    href: `/lesson/${l.id}`,
+    category: 'Runtime'
   })),
 ]
 
@@ -147,6 +194,7 @@ export default function SearchPalette() {
               <span className="search-palette-num">{r.number > 0 ? r.number : '·'}</span>
               <span className="search-palette-text">
                 <span className="search-palette-title">{r.title}</span>
+                <span className="search-palette-category">{r.category}</span>
                 <span className="search-palette-desc">{r.description}</span>
               </span>
               <span className="search-palette-href">{r.href}</span>

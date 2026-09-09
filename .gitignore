@@ -41,3 +41,5 @@ out/
 test-results/
 ### Claude Code settings ###
 .claude/
+
+/src/main/resources/static
