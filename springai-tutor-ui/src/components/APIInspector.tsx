@@ -15,19 +15,22 @@ interface APIInspectorProps {
   }
 }
 
+type TabKey = 'local-request' | 'spring-ai-request' | 'model-response' | 'flow'
+
 interface RequestTab {
+  key: TabKey
   label: string
   content: string
   language: string
 }
 
 export default function APIInspector({ featureId, requestData, responseData }: APIInspectorProps) {
-  const [activeTab, setActiveTab] = useState<'request' | 'response' | 'flow'>('request')
+  const [activeTab, setActiveTab] = useState<TabKey>('local-request')
 
   const tabs: RequestTab[] = [
-    { label: 'Local Request', content: getLocalRequest(requestData), language: 'http' },
-    { label: 'Spring AI Request', content: getSpringAIRequest(requestData), language: 'java' },
-    { label: 'Model Response', content: getModelResponse(responseData), language: 'json' },
+    { key: 'local-request', label: 'Local Request', content: getLocalRequest(requestData), language: 'http' },
+    { key: 'spring-ai-request', label: 'Spring AI Request', content: getSpringAIRequest(requestData), language: 'java' },
+    { key: 'model-response', label: 'Model Response', content: getModelResponse(responseData), language: 'json' },
   ]
 
   return (
@@ -39,31 +42,42 @@ export default function APIInspector({ featureId, requestData, responseData }: A
 
       {/* Tab Navigation */}
       <div className="api-inspector-tabs" role="tablist">
-        {tabs.map((tab) => {
-          const tabKey = tab.label.toLowerCase().replace(' ', '-') as 'request' | 'response' | 'flow'
-          return (
-            <button
-              key={tab.label}
-              type="button"
-              role="tab"
-              aria-selected={activeTab === tabKey}
-              className={`api-inspector-tab ${activeTab === tabKey ? 'active' : ''}`}
-              onClick={() => setActiveTab(tabKey)}
-            >
-              {tab.label}
-            </button>
-          )
-        })}
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === tab.key}
+            className={`api-inspector-tab ${activeTab === tab.key ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'flow'}
+          className={`api-inspector-tab ${activeTab === 'flow' ? 'active' : ''}`}
+          onClick={() => setActiveTab('flow')}
+        >
+          Request Flow
+        </button>
       </div>
 
       {/* Tab Content */}
       <div className="api-inspector-content">
-        {activeTab === 'request' && (
+        {activeTab === 'local-request' && (
           <div className="api-inspector-panel" role="tabpanel">
             <CodeView code={tabs[0].content} filename={`${featureId || 'request'}.http`} />
           </div>
         )}
-        {activeTab === 'response' && (
+        {activeTab === 'spring-ai-request' && (
+          <div className="api-inspector-panel" role="tabpanel">
+            <CodeView code={tabs[1].content} filename="chat-client.java" />
+          </div>
+        )}
+        {activeTab === 'model-response' && (
           <div className="api-inspector-panel" role="tabpanel">
             <CodeView code={tabs[2].content} filename="response.json" />
           </div>

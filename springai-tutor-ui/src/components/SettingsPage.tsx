@@ -9,14 +9,16 @@ export default function SettingsPage() {
     fetchHealth().then(setHealth)
   }, [])
 
-  if (!health) return <p>Loading config…</p>
-
   return (
     <div className="settings-page">
       <h2>Settings</h2>
-      <p className="subtitle">Read-only view of the active configuration.</p>
+      {!health ? (
+        <p>Loading config…</p>
+      ) : (
+        <>
+          <p className="subtitle">Read-only view of the active configuration.</p>
 
-      <table className="settings-table">
+          <table className="settings-table">
         <tbody>
           <tr>
             <th>Status</th>
@@ -70,6 +72,8 @@ OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 OPENROUTER_CHAT_MODEL=minimax/minimax-m3:free
 
 ./gradlew bootRun`}</code></pre>
+        </>
+      )}
     </div>
   )
 }

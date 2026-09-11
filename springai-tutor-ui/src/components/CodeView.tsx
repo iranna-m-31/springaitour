@@ -1,6 +1,7 @@
+
 import { useMemo } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import atomOneDark from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark'
+import atomOneDark from 'react-syntax-highlighter/dist/esm/styles/prism/atom-dark'
 import CopyButton from './CopyButton'
 
 export interface CodeViewProps {
@@ -15,6 +16,7 @@ export interface CodeViewProps {
 /** Map a filename to a syntax-highlighter language id. */
 function languageFromFilename(filename: string): string {
   const ext = filename.split('.').pop()?.toLowerCase() ?? ''
+
   const map: Record<string, string> = {
     java: 'java',
     js: 'javascript',
@@ -38,19 +40,29 @@ function languageFromFilename(filename: string): string {
     kt: 'kotlin',
     gradle: 'groovy',
   }
+
   return map[ext] ?? 'text'
 }
 
 /**
  * A syntax-highlighted, line-numbered, copyable code viewer.
  *
- * Replaces the old CodeViewer.tsx which only rendered raw HTML without
- * highlighting. Uses react-syntax-highlighter (already a project dep)
- * with the same atomOneDark theme as CodeBlock.tsx.
+ * Uses react-syntax-highlighter with the atomOneDark theme.
  */
-export default function CodeView({ code, filename, highlightLines }: CodeViewProps) {
-  const language = useMemo(() => languageFromFilename(filename), [filename])
-  const lineCount = useMemo(() => code.split(/\r\n|\r|\n/).length, [code])
+export default function CodeView({
+  code,
+  filename,
+  highlightLines,
+}: CodeViewProps) {
+  const language = useMemo(
+    () => languageFromFilename(filename),
+    [filename]
+  )
+
+  const lineCount = useMemo(
+    () => code.split(/\r\n|\r|\n/).length,
+    [code]
+  )
 
   return (
     <div className="code-view">
@@ -60,8 +72,13 @@ export default function CodeView({ code, filename, highlightLines }: CodeViewPro
           <span className="dot-yellow"></span>
           <span className="dot-green"></span>
         </div>
+
         <span className="code-filename">{filename}</span>
-        <span className="code-view-meta">{lineCount} lines</span>
+
+        <span className="code-view-meta">
+          {lineCount} lines
+        </span>
+
         <div className="code-view-actions">
           <CopyButton value={code} />
         </div>
@@ -83,14 +100,21 @@ export default function CodeView({ code, filename, highlightLines }: CodeViewPro
             margin: 0,
             padding: '1rem 0',
             background: '#0d1117',
+            color: '#ffffff',
             fontSize: '0.8125rem',
             flex: 1,
             overflow: 'auto',
           }}
           lineProps={(lineNumber: number) => {
-            const isHighlighted = highlightLines?.includes(lineNumber)
+            const isHighlighted =
+              highlightLines?.includes(lineNumber)
+
             return isHighlighted
-              ? { style: { background: 'rgba(59, 130, 246, 0.18)' } }
+              ? {
+                  style: {
+                    background: 'rgba(59, 130, 246, 0.18)',
+                  },
+                }
               : {}
           }}
         >

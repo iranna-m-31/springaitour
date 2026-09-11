@@ -13,7 +13,7 @@ export default function AppLayout() {
         <Outlet />
       </main>
       <aside className="lab-panel" aria-label="Local lab">
-        <LocalLabPanel compact />
+        <LocalLabPanel />
       </aside>
       <SearchPalette />
     </div>

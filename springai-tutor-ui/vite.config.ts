@@ -23,6 +23,7 @@ export default defineConfig(({ mode }) => {
       proxy: {
         // Proxy API calls to Spring Boot during dev
         '/ai': 'http://localhost:8080',
+        '/api/tutor': 'http://localhost:8080',
         '/actuator': 'http://localhost:8080',
       },
     },

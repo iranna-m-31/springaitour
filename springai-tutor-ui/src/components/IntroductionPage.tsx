@@ -76,8 +76,8 @@ export default function IntroductionPage() {
         <h2>📚 Documentation</h2>
         <ul>
           <li><a href="https://docs.spring.io/spring-ai/reference/index.html" target="_blank" rel="noreferrer">Spring AI 2.0.1 Reference →</a></li>
-          <li><a href="https://docs.spring.io/spring-ai/reference/api/chatclient.html" target="_blank" rel="noreferrer">ChatClient API →</a></li>
-          <li><a href="https://docs.spring.io/spring-ai/reference/model/overview.html" target="_blank" rel="noreferrer">Models Overview →</a></li>
+          <li><a href="https://docs.spring.io/spring-ai/reference/chat/chat-client.html" target="_blank" rel="noreferrer">ChatClient API →</a></li>
+          <li><a href="https://docs.spring.io/spring-ai/reference/model/model-index.html" target="_blank" rel="noreferrer">Models Overview →</a></li>
         </ul>
       </section>
 

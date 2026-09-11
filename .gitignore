@@ -38,7 +38,7 @@ out/
 
 .env
 ### Test artifacts ###
-test-results/
+springai-tutor-ui/test-results
 ### Claude Code settings ###
 .claude/
 

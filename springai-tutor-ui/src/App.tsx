@@ -8,9 +8,9 @@ import CallLogPage from './components/CallLogPage'
 import PlaygroundPage from './components/PlaygroundPage'
 import LabPage from './components/LabPage'
 import HomePage from './components/HomePage'
-import IntroductionPage from './components/IntroductionPage'
 import CompletionPage from './components/CompletionPage'
 import CapstonePage from './components/CapstonePage'
+import { features } from './data/features'
 import { lessons } from './data/lessons'
 
 export default function App() {
@@ -20,7 +20,7 @@ export default function App() {
         <Route path="/" element={<AppLayout />}>
           <Route index element={<HomePage />} />
           <Route path="home" element={<HomePage />} />
-          <Route path="introduction" element={<IntroductionPage />} />
+          <Route path="introduction" element={<Navigate to="/" replace />} />
           {/* Lesson-based routes - main curriculum */}
           {lessons.map((l) => (
             <Route
@@ -29,12 +29,12 @@ export default function App() {
               element={<LessonPage lesson={l} />}
             />
           ))}
-          {/* Feature-based routes - legacy compatibility */}
-          {lessons.filter(l => l.featureId).map((l) => (
+          {/* Feature-based routes - backed by actual feature data */}
+          {features.map((feature) => (
             <Route
-              key={`feature-${l.featureId}`}
-              path={`feature/${l.featureId}`}
-              element={<FeaturePage feature={{ ...l, id: l.featureId, number: l.number, title: l.title, endpoint: '/api/tutor/chat' } as any} />}
+              key={`feature-${feature.id}`}
+              path={`feature/${feature.id}`}
+              element={<FeaturePage feature={feature} />}
             />
           ))}
           <Route path="download" element={<DownloadSection />} />

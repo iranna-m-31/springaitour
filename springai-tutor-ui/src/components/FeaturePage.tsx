@@ -52,7 +52,7 @@ export default function FeaturePage({ feature }: FeaturePageProps) {
   const module = modules.find(m => m.id === feature.module)
 
   // Progress tracking + adjacent feature navigation
-  const { completed, toggle } = useProgress()
+  const { completed, toggle, percent, total } = useProgress()
   const allFeatures = features
   const prevFeature = allFeatures.find(f => f.number === feature.number - 1)
   const nextFeature = allFeatures.find(f => f.number === feature.number + 1)
@@ -159,12 +159,12 @@ export default function FeaturePage({ feature }: FeaturePageProps) {
             </a>
           </li>
           <li>
-            <a href="https://docs.spring.io/spring-ai/reference/api/chatclient.html" target="_blank" rel="noreferrer">
+            <a href="https://docs.spring.io/spring-ai/reference/chat/chat-client.html" target="_blank" rel="noreferrer">
               ChatClient API →
             </a>
           </li>
           <li>
-            <a href="https://docs.spring.io/spring-ai/reference/model/overview.html" target="_blank" rel="noreferrer">
+            <a href="https://docs.spring.io/spring-ai/reference/model/model-index.html" target="_blank" rel="noreferrer">
               Models Overview →
             </a>
           </li>
@@ -188,8 +188,11 @@ export default function FeaturePage({ feature }: FeaturePageProps) {
             </span>
           </p>
           <div className="progress-bar" style={{ height: '6px' }}>
-            <div className="progress-fill" style={{ width: `${(feature.number / 16) * 100}%` }} />
+            <div className="progress-fill" style={{ width: `${percent}%` }} />
           </div>
+          <p style={{ fontSize: '0.7rem', marginTop: 'var(--space-2)', color: 'var(--text-muted)' }}>
+            {completed.size} / {total} features completed
+          </p>
         </section>
       )}
 

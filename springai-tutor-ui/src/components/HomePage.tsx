@@ -58,6 +58,23 @@ export default function HomePage() {
         <p className="hero-tagline">Learn AI, RAG, embeddings, and more with Spring AI</p>
       </section>
 
+      {/* ===== WHAT IS SPRING AI? ===== */}
+      <section className="intro-section fade-in" style={{ marginTop: 'var(--space-10)' }}>
+        <h2>📖 What is Spring AI?</h2>
+        <p>
+          Spring AI provides a portable API for AI operations across multiple LLM providers.
+          It abstracts away vendor-specific details while giving you access to the full power of
+          modern AI models.
+        </p>
+        <ul style={{ marginRight: '2rem' }}>
+          <li><strong>Portable API</strong> — Same code works with OpenAI, Anthropic, Azure, Ollama, and more</li>
+          <li><strong>ChatClient</strong> — Fluent, testable API for LLM interactions</li>
+          <li><strong>Advisors</strong> — Cross-cutting concerns like logging, memory, RAG, safety</li>
+          <li><strong>RAG Support</strong> — Vector stores, document readers, similarity search</li>
+          <li><strong>Tool Calling</strong> — Let the LLM decide when to use your Java methods</li>
+        </ul>
+      </section>
+
       {/* ===== LEARNING PATH OVERVIEW ===== */}
       <section className="learning-path fade-in">
         <h2>Learning Path</h2>
@@ -103,6 +120,18 @@ export default function HomePage() {
             <div className="progress-fill" style={{ width: `${percent}%` }} />
           </div>
         </div>
+      </section>
+
+      {/* ===== QUICK START ===== */}
+      {/* ===== PREQUISITES ===== */}
+      <section className="intro-section fade-in" style={{ marginTop: 'var(--space-10)' }}>
+        <h2>🔧 Prerequisites</h2>
+        <ul>
+          <li>Java 21+ and Spring Boot 4.1.x</li>
+          <li>An OpenRouter API key (or any OpenAI-compatible provider)</li>
+          <li>Basic familiarity with Spring Boot and REST APIs</li>
+          <li>Docker (optional, for vector store demos)</li>
+        </ul>
       </section>
 
       {/* ===== QUICK START ===== */}
@@ -165,6 +194,26 @@ export default function HomePage() {
             </button>
           </div>
         </div>
+      </section>
+
+      {/* ===== DOCUMENTATION ===== */}
+      <section className="intro-section fade-in" style={{ marginTop: 'var(--space-10)' }}>
+        <h2>📚 Documentation</h2>
+        <ul>
+          <li><a href="https://docs.spring.io/spring-ai/reference/index.html" target="_blank" rel="noreferrer">Spring AI 2.0.1 Reference →</a></li>
+          <li><a href="https://docs.spring.io/spring-ai/reference/chat/chat-client.html" target="_blank" rel="noreferrer">ChatClient API →</a></li>
+          <li><a href="https://docs.spring.io/spring-ai/reference/model/model-index.html" target="_blank" rel="noreferrer">Models Overview →</a></li>
+        </ul>
+      </section>
+
+      {/* ===== START TUTORIAL CTA ===== */}
+      <section className="intro-section" style={{ textAlign: 'center', marginTop: 'var(--space-10)' }}>
+        <Link to="/feature/plain-chat" className="btn btn-primary" style={{ fontSize: '1.125rem', padding: 'var(--space-4) var(--space-8)' }}>
+          🚀 Start Tutorial →
+        </Link>
+        <p style={{ marginTop: 'var(--space-3)', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+          Begins with <strong>Plain Chat</strong> (Feature 1 of 16)
+        </p>
       </section>
     </div>
   )

@@ -1,329 +1,426 @@
 import { test, expect, type Page } from '@playwright/test'
+import { features } from '../src/data/features'
+import { lessons } from '../src/data/lessons'
 
-const BASE = 'http://localhost:8080'
+const UI_BASE = process.env.PLAYWRIGHT_UI_BASE_URL ?? ''
+const API_BASE = process.env.PLAYWRIGHT_API_BASE_URL ?? 'http://localhost:8080'
 
-interface Bug {
-  severity: 'high' | 'medium' | 'low'
-  area: string
-  issue: string
-  detail?: string
+type BackendStatus = 'ready' | 'unavailable' | 'checking'
+
+async function checkBackend(page: Page): Promise<BackendStatus> {
+  try {
+    const resp = await page.request.get(`${API_BASE}/api/tutor/health`, { timeout: 3000 })
+    if (resp.ok()) {
+      const data = await resp.json()
+      return data.status === 'ready' ? 'ready' : 'unavailable'
+    }
+  } catch {}
+  return 'unavailable'
 }
 
-const bugs: Bug[] = []
+/** All static routes under AppLayout */
+const APP_ROUTES = [
+  ['/', 'Interactive Spring AI Tutorial'],
+  ['/home', 'Interactive Spring AI Tutorial'],
+  ['/introduction', 'Interactive Spring AI Tutorial'], // redirects to /
+  ['/lab', 'Spring AI Lab'],
+  ['/playground', 'Playground'],
+  ['/settings', 'Settings'],
+  ['/call-log', 'Call Log'],
+  ['/download', 'Download the Full Project'],
+  ['/capstone', 'Capstone Project: Spring AI Support Assistant'],
+] as const
 
-function record(severity: Bug['severity'], area: string, issue: string, detail?: string) {
-  bugs.push({ severity, area, issue, detail })
-}
+/** All feature routes from data */
+const FEATURE_ROUTES = features.map((f) => [`/feature/${f.id}`, f.title]) as [string, string][]
 
-async function collectPageErrors(page: Page) {
-  const errors: string[] = []
-  page.on('console', (msg) => {
-    if (msg.type() === 'error') errors.push(msg.text())
+/** All lesson routes from data */
+const LESSON_ROUTES = lessons.map((l) => [`/lesson/${l.id}`, l.title]) as [string, string][]
+
+/** Completion page outside AppLayout */
+const COMPLETION_ROUTE = ['/completion', 'Congratulations!'] as const
+
+test.describe('UI Audit – routes, navigation, and controls', () => {
+  let backendStatus: BackendStatus = 'checking'
+
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage()
+    backendStatus = await checkBackend(page)
+    await page.close()
+    console.log(`\n[Backend] status: ${backendStatus}`)
   })
-  page.on('pageerror', (err) => errors.push(err.message))
-  return errors
-}
 
-test('UI audit — click through navigation and buttons', async ({ page }) => {
-  test.setTimeout(300000)
-  const consoleErrors = await collectPageErrors(page)
+  // ---- 1. Static page rendering ----
+  for (const [path, heading] of APP_ROUTES) {
+    test(`renders ${path}`, async ({ page }) => {
+      await page.goto(`${UI_BASE}${path}`, { waitUntil: 'domcontentloaded' })
+      await expect(page.getByRole('heading', { name: heading })).toBeVisible({ timeout: 10000 })
+    })
+  }
 
-  await page.goto(BASE)
-  await page.waitForLoadState('networkidle')
+  test(`renders ${COMPLETION_ROUTE[0]}`, async ({ page }) => {
+    await page.goto(`${UI_BASE}${COMPLETION_ROUTE[0]}`, { waitUntil: 'domcontentloaded' })
+    await expect(page.getByRole('heading', { name: COMPLETION_ROUTE[1] })).toBeVisible({ timeout: 10000 })
+  })
 
-  // --- Top nav ---
-  const topNavButtons = [
-    { name: 'Home', selector: '.top-nav-link:has-text("Home")' },
-    { name: 'Learn', selector: '.top-nav-link:has-text("Learn")' },
-    { name: 'Lab', selector: '.top-nav-link:has-text("Lab")' },
-  ]
+  // ---- 2. Feature pages (16) ----
+  for (const [path, title] of FEATURE_ROUTES) {
+    test(`feature page ${path} loads`, async ({ page }) => {
+      await page.goto(`${UI_BASE}${path}`, { waitUntil: 'domcontentloaded' })
+      const h1 = page.locator('.feature-page-header h1')
+      await expect(h1).toBeVisible({ timeout: 10000 })
+      await expect(h1).toContainText(title)
+    })
+  }
 
-  for (const btn of topNavButtons) {
-    const el = page.locator(btn.selector).first()
-    if ((await el.count()) === 0) {
-      record('high', 'TopNav', `${btn.name} button missing`)
-      continue
+  // ---- 3. Lesson pages (61) ----
+  for (const [path, title] of LESSON_ROUTES) {
+    test(`lesson page ${path} loads`, async ({ page }) => {
+      await page.goto(`${UI_BASE}${path}`, { waitUntil: 'domcontentloaded' })
+      const h1 = page.locator('h1').first()
+      await expect(h1).toBeVisible({ timeout: 10000 })
+      await expect(h1).toContainText(title)
+    })
+  }
+
+  // ---- 4. Top navigation ----
+  test('top nav – Home, Learn, Lab, Get Started', async ({ page }) => {
+    await page.goto(`${UI_BASE}/`, { waitUntil: 'domcontentloaded' })
+
+    await page.locator('.top-nav-link:has-text("Home")').click()
+    await expect(page).toHaveURL(`${UI_BASE}/`)
+
+    await page.locator('.top-nav-link:has-text("Learn")').click()
+    await expect(page).toHaveURL(`${UI_BASE}/`)
+
+    await page.locator('.top-nav-link:has-text("Lab")').click()
+    await expect(page).toHaveURL(`${UI_BASE}/lab`)
+
+    // Get Started CTA
+    await page.goto(`${UI_BASE}/`, { waitUntil: 'domcontentloaded' })
+    const cta = page.locator('.top-nav-cta').first()
+    if (await cta.count()) {
+      await cta.click()
+      await expect(page).toHaveURL(`${UI_BASE}/`)
     }
-    await el.click()
-    await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(400)
-  }
+  })
 
-  // Health pill
-  const healthPill = page.locator('.health-pill').first()
-  if ((await healthPill.count()) > 0) {
-    await healthPill.click()
-    await page.waitForTimeout(1500)
-    const text = await healthPill.textContent()
-    if (text?.includes('Checking')) {
-      await page.waitForFunction(
-        () => !document.querySelector('.health-pill')?.textContent?.includes('Checking'),
-        { timeout: 10000 }
-      ).catch(() => record('medium', 'TopNav', 'Health check hangs on "Checking…"'))
-    }
-  } else {
-    record('high', 'TopNav', 'Health pill button missing')
-  }
+  // ---- 5. Mobile menu ----
+  test('mobile menu opens and navigates', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto(`${UI_BASE}/`, { waitUntil: 'domcontentloaded' })
 
-  // Get Started CTA
-  const cta = page.locator('.top-nav-cta').first()
-  if ((await cta.count()) > 0) {
-    await cta.click()
-    await page.waitForLoadState('networkidle')
-    if (!page.url().includes('/introduction')) {
-      record('medium', 'TopNav', 'Get Started did not navigate to /introduction', page.url())
-    }
-  }
+    const toggle = page.locator('.menu-toggle')
+    if (await toggle.count()) {
+      await toggle.click()
+      const menu = page.locator('.top-nav-mobile-menu')
+      await expect(menu).toBeVisible({ timeout: 3000 })
 
-  // --- Home page buttons ---
-  await page.goto(BASE)
-  await page.waitForLoadState('networkidle')
-
-  const hero = page.locator('h1').first()
-  if ((await hero.count()) === 0) {
-    record('high', 'Home', 'Hero heading missing')
-  }
-
-  const moduleCards = page.locator('.module-card')
-  const cardCount = await moduleCards.count()
-  if (cardCount === 0) {
-    record('high', 'Home', 'No module cards on home page')
-  } else {
-    await moduleCards.first().click()
-    await page.waitForLoadState('networkidle')
-    if (!page.url().includes('/feature/')) {
-      record('medium', 'Home', 'Module card did not navigate to feature page', page.url())
-    }
-  }
-
-  await page.goto(BASE)
-  const healthCheckBtn = page.locator('.health-check-btn').first()
-  if ((await healthCheckBtn.count()) > 0) {
-    await healthCheckBtn.click()
-    await page.waitForTimeout(2000)
-    const details = page.locator('.health-details, .setup-warning, .skeleton')
-    if ((await details.count()) === 0) {
-      record('medium', 'Home', 'Run Health Check shows no feedback')
-    }
-  }
-
-  const healthActions = page.locator('.health-btn')
-  const actionCount = await healthActions.count()
-  for (let i = 0; i < actionCount; i++) {
-    const btn = healthActions.nth(i)
-    const label = (await btn.textContent())?.trim() ?? `action-${i}`
-    if (label.includes('Start Tutorial') || label.includes('First Feature')) {
-      await btn.click()
-      await page.waitForLoadState('networkidle')
-    }
-  }
-
-  // --- Learning sidebar ---
-  await page.goto(BASE)
-  const sidebarLessons = page.locator('.learning-lesson-link')
-  const lessonCount = await sidebarLessons.count()
-  if (lessonCount === 0) {
-    record('high', 'Sidebar', 'No lesson links in learning sidebar')
-  } else {
-    // First 3 lessons
-    for (let i = 0; i < Math.min(3, lessonCount); i++) {
-      await page.goto(BASE)
-      const link = page.locator('.learning-lesson-link').nth(i)
-      const href = await link.getAttribute('href')
-      await link.click()
-      await page.waitForLoadState('networkidle')
-      if (href && !page.url().includes(href.replace(/^\//, ''))) {
-        record('medium', 'Sidebar', `Lesson link navigation mismatch`, `expected ${href}, got ${page.url()}`)
-      }
-      // In-page nav tabs
-      const tabs = page.locator('.in-page-nav-tab')
-      const tabCount = await tabs.count()
-      for (let t = 0; t < tabCount; t++) {
-        await tabs.nth(t).click()
-        await page.waitForTimeout(300)
-      }
-    }
-  }
-
-  // Phase toggle
-  await page.goto(BASE)
-  const phaseHeaders = page.locator('.learning-phase-header')
-  if ((await phaseHeaders.count()) > 0) {
-    await phaseHeaders.first().click()
-    await page.waitForTimeout(300)
-    await phaseHeaders.first().click()
-  }
-
-  // --- Introduction ---
-  await page.goto(`${BASE}/introduction`)
-  await page.waitForLoadState('networkidle')
-  const introStart = page.locator('.intro-section .btn-primary, a.btn-primary').first()
-  if ((await introStart.count()) > 0) {
-    await introStart.click()
-    await page.waitForLoadState('networkidle')
-  }
-
-  // --- Lab page ---
-  await page.goto(`${BASE}/lab`)
-  await page.waitForLoadState('networkidle')
-  const runHealth = page.locator('.lab-page .btn-primary').first()
-  if ((await runHealth.count()) > 0) {
-    await runHealth.click()
-    await page.waitForTimeout(2000)
-  }
-  const setupDoctorBtn = page.locator('.setup-doctor .btn-primary, .doctor-fix-btn').first()
-  if ((await setupDoctorBtn.count()) > 0) {
-    // just verify visible, don't run fix actions
-  }
-
-  // --- Playground ---
-  await page.goto(`${BASE}/playground`)
-  await page.waitForLoadState('networkidle')
-  const playgroundHeading = page.locator('h2:has-text("Playground")')
-  if ((await playgroundHeading.count()) === 0) {
-    record('high', 'Playground', 'Playground page heading not found')
-  }
-  const personas = page.locator('.persona-btn')
-  const personaCount = await personas.count()
-  for (let i = 0; i < personaCount; i++) {
-    await personas.nth(i).click()
-    await page.waitForTimeout(200)
-  }
-  const pgInput = page.locator('.playground-form input').first()
-  if ((await pgInput.count()) > 0) {
-    await pgInput.fill('ping')
-    const sendBtn = page.locator('.playground-form button').first()
-    await sendBtn.click()
-    await page.waitForTimeout(3000)
-    const assistantMsg = page.locator('.chat-message.assistant')
-    const errBox = page.locator('.error-box')
-    if ((await assistantMsg.count()) === 0 && (await errBox.count()) === 0) {
-      record('medium', 'Playground', 'Send message produced no response and no error UI')
-    }
-  }
-
-  // --- Settings, Call Log, Download ---
-  for (const path of ['/settings', '/call-log', '/download']) {
-    await page.goto(`${BASE}${path}`)
-    await page.waitForLoadState('networkidle')
-    const h2 = page.locator('h2').first()
-    if ((await h2.count()) === 0) {
-      record('high', path, 'Page has no h2 heading')
-    }
-  }
-
-  const downloadBtn = page.locator('.download-btn').first()
-  if ((await downloadBtn.count()) > 0) {
-    // click triggers download — just verify enabled
-    if (await downloadBtn.isDisabled()) {
-      record('low', 'Download', 'Download button is disabled')
-    }
-  } else {
-    record('medium', 'Download', 'Download button missing')
-  }
-
-  // --- Capstone ---
-  await page.goto(`${BASE}/capstone`)
-  await page.waitForLoadState('networkidle')
-  if ((await page.locator('.capstone-page, .capstone-header').count()) === 0) {
-    record('high', 'Capstone', 'Capstone page content missing')
-  }
-
-  // --- Search palette Cmd+K ---
-  await page.goto(BASE)
-  await page.keyboard.press('Meta+K')
-  await page.waitForTimeout(500)
-  let palette = page.locator('.search-palette')
-  if ((await palette.count()) === 0) {
-    await page.keyboard.press('Control+K')
-    await page.waitForTimeout(500)
-  }
-  palette = page.locator('.search-palette')
-  if ((await palette.count()) === 0) {
-    record('high', 'Search', 'Cmd/Ctrl+K search palette does not open')
-  } else {
-    const input = page.locator('.search-palette-input')
-    await input.fill('chat')
-    await page.waitForTimeout(300)
-    const results = page.locator('.search-palette-result')
-    if ((await results.count()) === 0) {
-      record('medium', 'Search', 'Search for "chat" returns no results')
-    } else {
-      await results.first().click()
-      await page.waitForLoadState('networkidle')
-    }
-    await page.keyboard.press('Escape')
-  }
-
-  // --- Local lab panel ---
-  await page.goto(BASE)
-  const labPanel = page.locator('.local-lab-panel')
-  if ((await labPanel.count()) === 0) {
-    record('high', 'Lab panel', 'Local lab panel not visible in right rail')
-  } else {
-    const refreshBtn = page.locator('.local-lab-panel .btn').first()
-    if ((await refreshBtn.count()) > 0) {
-      await refreshBtn.click()
-      await page.waitForTimeout(1500)
-    }
-  }
-
-  // --- Feature pages with Try It (sample) ---
-  await page.goto(`${BASE}/feature/plain-chat`)
-  await page.waitForLoadState('networkidle')
-  const tryBtn = page.locator('.try-btn:not([disabled])').first()
-  if ((await tryBtn.count()) > 0) {
-    await tryBtn.click()
-    await page.waitForTimeout(5000)
-    const hasResult =
-      (await page.locator('.markdown-viewer, .demo-result pre, .error-box, .empty-state').count()) > 0
-    if (!hasResult) {
-      record('medium', 'Feature demo', 'Try It on plain-chat shows no result area')
-    }
-  }
-
-  // --- Mobile menu ---
-  await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto(BASE)
-  const menuToggle = page.locator('.menu-toggle')
-  if ((await menuToggle.count()) === 0) {
-    record('medium', 'Mobile', 'Menu toggle not visible on mobile viewport')
-  } else {
-    await menuToggle.click()
-    const mobileMenu = page.locator('.top-nav-mobile-menu')
-    if ((await mobileMenu.count()) === 0 || !(await mobileMenu.isVisible())) {
-      record('high', 'Mobile', 'Mobile menu does not open')
-    } else {
-      const mobileHome = mobileMenu.locator('button').first()
+      // Click Home in mobile menu
+      const mobileHome = menu.locator('button:has-text("Home")').first()
       await mobileHome.click()
-      await page.waitForLoadState('networkidle')
+      await expect(page).toHaveURL(`${UI_BASE}/`)
     }
-  }
+  })
 
-  // --- Completion page (direct) ---
-  await page.setViewportSize({ width: 1280, height: 800 })
-  await page.goto(`${BASE}/completion`)
-  await page.waitForLoadState('networkidle')
-  if ((await page.locator('.completion-page, h1, h2').count()) === 0) {
-    record('medium', 'Completion', '/completion page appears empty or unstyled')
-  }
+  // ---- 6. Search palette (Cmd+K / Ctrl+K) ----
+  test('search palette opens and filters', async ({ page }) => {
+    await page.goto(`${UI_BASE}/`, { waitUntil: 'domcontentloaded' })
+    await page.keyboard.press('Meta+K')
+    await page.waitForTimeout(300)
+    let palette = page.locator('.search-palette')
+    if (!(await palette.count())) {
+      await page.keyboard.press('Control+K')
+      await page.waitForTimeout(300)
+      palette = page.locator('.search-palette')
+    }
+    if (await palette.count()) {
+      await expect(palette).toBeVisible()
+      await palette.locator('.search-palette-input').fill('chat')
+      await page.waitForTimeout(300)
+      const results = page.locator('.search-palette-result')
+      if (await results.count()) {
+        await results.first().click()
+        await expect(page).not.toHaveURL(`${UI_BASE}/`)
+      }
+      await page.keyboard.press('Escape')
+    }
+  })
 
-  // --- Console errors ---
-  const uniqueErrors = [...new Set(consoleErrors)].filter(
-    (e) => !e.includes('favicon') && !e.includes('404')
-  )
-  for (const err of uniqueErrors.slice(0, 10)) {
-    record('high', 'Console', 'JavaScript console error', err.slice(0, 200))
-  }
+  // ---- 7. Home page module cards & Start Tutorial ----
+  test('home page – module cards and Start Tutorial', async ({ page }) => {
+    await page.goto(`${UI_BASE}/`, { waitUntil: 'domcontentloaded' })
 
-  // Print report
-  console.log('\n========== UI AUDIT REPORT ==========')
-  console.log(`Total issues found: ${bugs.length}`)
-  for (const b of bugs) {
-    console.log(`[${b.severity.toUpperCase()}] ${b.area}: ${b.issue}${b.detail ? ` — ${b.detail}` : ''}`)
-  }
-  console.log('=====================================\n')
+    const cards = page.locator('.module-card')
+    if (await cards.count()) {
+      await cards.first().click()
+      await expect(page).toHaveURL(/\/feature\//)
+    }
 
-  // Don't fail the test — we want the report either way
-  expect(bugs.filter((b) => b.severity === 'high').length).toBeLessThan(999)
+    // Start Tutorial CTA
+    await page.goto(`${UI_BASE}/`, { waitUntil: 'domcontentloaded' })
+    const startBtn = page.locator('a.btn:has-text("Start Tutorial")')
+    if (await startBtn.count()) {
+      await startBtn.click()
+      await expect(page).toHaveURL(`${UI_BASE}/feature/plain-chat`)
+    }
+  })
+
+  // ---- 8. Sidebar – phase toggle and lesson links ----
+  test('sidebar – phase headers expand/collapse, lesson links navigate', async ({ page }) => {
+    await page.goto(`${UI_BASE}/`, { waitUntil: 'domcontentloaded' })
+
+    const phaseHeaders = page.locator('.learning-phase-header')
+    if (await phaseHeaders.count()) {
+      await phaseHeaders.first().click()
+      await page.waitForTimeout(300)
+      await phaseHeaders.first().click()
+      await page.waitForTimeout(300)
+    }
+
+    // First lesson link
+    const lessonLinks = page.locator('.learning-lesson-link')
+    const count = await lessonLinks.count()
+    if (count) {
+      const first = lessonLinks.first()
+      const href = await first.getAttribute('href')
+      if (href) {
+        await first.click()
+        await expect(page).toHaveURL(`${UI_BASE}${href}`)
+      }
+    }
+  })
+
+  // ---- 9. Feature page controls (first feature as representative) ----
+  test('feature page – in-page tabs, architecture, checkpoint, progress, navigation', async ({ page }) => {
+    await page.goto(`${UI_BASE}/feature/plain-chat`, { waitUntil: 'domcontentloaded' })
+
+    // In-page nav tabs
+    const tabs = page.locator('.in-page-nav-tab')
+    const tabCount = await tabs.count()
+    for (let i = 0; i < tabCount; i++) {
+      await tabs.nth(i).click()
+      await page.waitForTimeout(200)
+    }
+
+    // Architecture diagram – click a component
+    const archComponents = page.locator('.architecture-component')
+    if (await archComponents.count()) {
+      await archComponents.first().click()
+      await page.waitForTimeout(200)
+      await expect(page.locator('.architecture-component-info')).toBeVisible({ timeout: 3000 })
+    }
+
+    // Checkpoint – pick an option if present; verify selection state is applied
+    const checkpointOption = page.locator('.checkpoint-option').first()
+    if (await checkpointOption.count()) {
+      await checkpointOption.click()
+      await page.waitForTimeout(200)
+      await expect(checkpointOption).toHaveClass(/selected/)
+    }
+
+    // Mark as complete checkbox
+    const checkbox = page.locator('input[type="checkbox"]:near(:text("Mark as complete"))')
+    if (await checkbox.count()) {
+      await checkbox.check()
+      await page.waitForTimeout(200)
+    }
+
+    // Next/Previous navigation buttons
+    const nextBtn = page.locator('.nav-next:not(.nav-next--completed)')
+    if (await nextBtn.count()) {
+      await nextBtn.click()
+      await page.waitForLoadState('domcontentloaded')
+      await expect(page).toHaveURL(/\/feature\//)
+    }
+  })
+
+  // ---- 10. API Inspector tabs (fixes empty content bug) ----
+  test('API Inspector – all tabs show content', async ({ page }) => {
+    // Navigate to a feature page that includes API Inspector (e.g., plain-chat)
+    await page.goto(`${UI_BASE}/feature/plain-chat`, { waitUntil: 'domcontentloaded' })
+
+    const apiInspectorTabs = page.locator('.api-inspector-tab')
+    const tabCount = await apiInspectorTabs.count()
+    for (let i = 0; i < tabCount; i++) {
+      await apiInspectorTabs.nth(i).click()
+      await page.waitForTimeout(200)
+      // Verify code content appears
+      await expect(page.locator('.code-view, .api-inspector-panel code, .api-inspector-flow')).toBeVisible({ timeout: 3000 })
+    }
+  })
+
+  // ---- 11. Playground – persona switching ----
+  test('playground – persona buttons switch active state', async ({ page }) => {
+    await page.goto(`${UI_BASE}/playground`, { waitUntil: 'domcontentloaded' })
+
+    const personas = page.locator('.persona-btn')
+    const count = await personas.count()
+    for (let i = 0; i < count; i++) {
+      await personas.nth(i).click()
+      await expect(personas.nth(i)).toHaveClass(/active/)
+    }
+  })
+
+  // ---- 12. FeatureNav sidebar – feature links ----
+  test('FeatureNav sidebar – feature links navigate', async ({ page }) => {
+    await page.goto(`${UI_BASE}/feature/plain-chat`, { waitUntil: 'domcontentloaded' })
+
+    // FeatureNav is on feature pages – click a feature link in the sidebar
+    const sidebarFeatureLinks = page.locator('.feature-nav .sidebar-nav li[onclick*="goToFeature"]').first()
+    if (await sidebarFeatureLinks.count()) {
+      await sidebarFeatureLinks.click()
+      await expect(page).toHaveURL(/\/feature\//)
+    }
+  })
+
+  // ---- 13. FeatureNav footer links ----
+  test('FeatureNav footer – Playground, Call Log, Completion, Download', async ({ page }) => {
+    await page.goto(`${UI_BASE}/feature/plain-chat`, { waitUntil: 'domcontentloaded' })
+
+    const links = [
+      ['Playground', '/playground'],
+      ['Call Log', '/call-log'],
+      ['Completion', '/completion'],
+      ['Download', '/download'],
+    ] as const
+
+    for (const [label, path] of links) {
+      const btn = page.locator(`.feature-nav .sidebar-footer button:has-text("${label}")`).first()
+      if (await btn.count()) {
+        await btn.click()
+        await expect(page).toHaveURL(`${UI_BASE}${path}`)
+        // Go back to feature page for next
+        await page.goto(`${UI_BASE}/feature/plain-chat`, { waitUntil: 'domcontentloaded' })
+      }
+    }
+  })
+
+  // ---- 14. Theme toggle ----
+  test('ThemeToggle – switches theme', async ({ page }) => {
+    await page.goto(`${UI_BASE}/feature/plain-chat`, { waitUntil: 'domcontentloaded' })
+    const toggle = page.locator('.feature-nav .ThemeToggle button, .theme-toggle button, [aria-label*="theme" i]').first()
+    if (await toggle.count()) {
+      await toggle.click()
+      await page.waitForTimeout(200)
+      // Click again to restore
+      await toggle.click()
+    }
+  })
+
+  // ---- 15. Capstone – ProgressiveDisclosure levels ----
+  test('Capstone – ProgressiveDisclosure level buttons', async ({ page }) => {
+    await page.goto(`${UI_BASE}/capstone`, { waitUntil: 'domcontentloaded' })
+
+    const levelButtons = page.locator('.progressive-disclosure button')
+    const count = await levelButtons.count()
+    for (let i = 0; i < count; i++) {
+      await levelButtons.nth(i).click()
+      await page.waitForTimeout(200)
+    }
+  })
+
+  // ---- 16. Completion page – links and reset ----
+  test('Completion page – navigation links and reset progress', async ({ page }) => {
+    await page.goto(`${UI_BASE}/completion`, { waitUntil: 'domcontentloaded' })
+
+    const links = [
+      ['/playground', 'Playground'],
+      ['/call-log', 'Call Log'],
+      ['/settings', 'Settings'],
+    ] as const
+
+    for (const [path, label] of links) {
+      const link = page.locator(`.next-step-card:has-text("${label}")`).first()
+      if (await link.count()) {
+        await link.click()
+        await expect(page).toHaveURL(`${UI_BASE}${path}`)
+        await page.goto(`${UI_BASE}/completion`, { waitUntil: 'domcontentloaded' })
+      }
+    }
+
+    // Reset progress – dismiss confirm dialog
+    const resetBtn = page.locator('button:has-text("Reset Progress")')
+    if (await resetBtn.count()) {
+      page.once('dialog', (d) => d.dismiss())
+      await resetBtn.click()
+    }
+  })
+
+  // ---- 17. Download page – button present ----
+  test('Download page – download button present', async ({ page }) => {
+    await page.goto(`${UI_BASE}/download`, { waitUntil: 'domcontentloaded' })
+    const btn = page.locator('.download-btn')
+    await expect(btn).toBeVisible()
+    await expect(btn).not.toBeDisabled()
+    // Do NOT click – triggers external GitHub download
+  })
+
+  // ---- 18. Local Lab Panel – visible and has refresh button ----
+  test('Local Lab Panel – visible in right rail', async ({ page }) => {
+    await page.goto(`${UI_BASE}/`, { waitUntil: 'domcontentloaded' })
+    const panel = page.locator('.local-lab-panel')
+    await expect(panel).toBeVisible({ timeout: 5000 })
+    const refreshBtn = panel.locator('.btn').first()
+    await expect(refreshBtn).toBeVisible()
+    // Do NOT click – triggers backend health check
+  })
+
+  // ---- 19. Backend-dependent smoke (only if backend is ready) ----
+  test.describe.configure({ retries: 0 })
+  test('backend integration – Try It button works when backend ready', async ({ page }) => {
+    test.skip(backendStatus !== 'ready', 'Backend not ready; skipping integration checks')
+
+    await page.goto(`${UI_BASE}/feature/plain-chat`, { waitUntil: 'domcontentloaded' })
+    const tryBtn = page.locator('.try-btn:not([disabled])').first()
+    if (await tryBtn.count()) {
+      await tryBtn.click()
+      await page.waitForTimeout(5000)
+      // Should show some response or loading state
+      const response = page.locator('.demo-result')
+      await expect(response).toBeVisible({ timeout: 10000 })
+    }
+  })
+
+  test('backend integration – View Source loads when backend ready', async ({ page }) => {
+    test.skip(backendStatus !== 'ready', 'Backend not ready; skipping integration checks')
+
+    await page.goto(`${UI_BASE}/feature/plain-chat`, { waitUntil: 'domcontentloaded' })
+    const sourceBtn = page.locator('.source-load-btn').first()
+    if (await sourceBtn.count()) {
+      await sourceBtn.click()
+      await page.waitForTimeout(5000)
+      const sourceView = page.locator('.code-view')
+      await expect(sourceView).toBeVisible({ timeout: 10000 })
+    }
+  })
+
+  // ---- 20. Console error check (frontend only) ----
+  test('no unexpected console errors (frontend only)', async ({ page }) => {
+    const errors: string[] = []
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        const txt = msg.text()
+        if (!txt.includes('favicon') && !txt.includes('404') && !txt.includes('ECONNREFUSED') && !txt.includes('Failed to fetch') && !txt.includes('502') && !txt.includes('Bad Gateway')) {
+          errors.push(txt)
+        }
+      }
+    })
+    page.on('pageerror', (err) => {
+      const txt = err.message
+      if (!txt.includes('favicon') && !txt.includes('404') && !txt.includes('ECONNREFUSED') && !txt.includes('Failed to fetch') && !txt.includes('502') && !txt.includes('Bad Gateway')) {
+        errors.push(txt)
+      }
+    })
+
+    // Visit a few key pages to trigger any errors
+    await page.goto(`${UI_BASE}/`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`${UI_BASE}/feature/plain-chat`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`${UI_BASE}/playground`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`${UI_BASE}/lab`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`${UI_BASE}/capstone`, { waitUntil: 'domcontentloaded' })
+
+    await page.waitForTimeout(1000)
+    expect(errors).toHaveLength(0)
+  })
 })

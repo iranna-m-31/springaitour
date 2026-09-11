@@ -19,9 +19,18 @@ export default function Checkpoint({ type, question, options, answer, explanatio
   answer: string | string[]
   explanation: string
 }) {
+  const storageKey = `spring-ai-tutor-checkpoint-${question.slice(0, 20)}`
+  const savedSelected = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null
+  const savedIsCorrect = typeof window !== 'undefined' ? localStorage.getItem(`${storageKey}-correct`) : null
+
   const [showResult, setShowResult] = useState(false)
-  const [selected, setSelected] = useState<string | string[] | null>(null)
-  const [isCorrect, setIsCorrect] = useState(false)
+  const [selected, setSelected] = useState<string | string[] | null>(() => {
+    if (savedSelected) {
+      try { return JSON.parse(savedSelected) } catch { return null }
+    }
+    return null
+  })
+  const [isCorrect, setIsCorrect] = useState(() => savedIsCorrect === 'true')
 
   const handleSubmit = (selectedValue: string | string[]) => {
     setSelected(selectedValue)
@@ -30,6 +39,10 @@ export default function Checkpoint({ type, question, options, answer, explanatio
     const isCorrectResult = answerArr.every(a => selectedArr.includes(a)) && selectedArr.length === answerArr.length
     setIsCorrect(isCorrectResult)
     setShowResult(true)
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(selectedValue))
+      localStorage.setItem(`${storageKey}-correct`, String(isCorrectResult))
+    } catch { /* ignore */ }
   }
 
   if (type === 'multiple-choice' && options && options.length > 0) {
