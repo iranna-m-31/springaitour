@@ -3,6 +3,7 @@ import { useState } from 'react'
 import TopNav from './TopNav'
 import LearningSidebar from './LearningSidebar'
 import SearchPalette from './SearchPalette'
+import Footer from './Footer'
 
 export default function AppLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -25,6 +26,7 @@ export default function AppLayout() {
         <Outlet />
       </main>
       <SearchPalette />
+      <Footer />
     </div>
   )
 }

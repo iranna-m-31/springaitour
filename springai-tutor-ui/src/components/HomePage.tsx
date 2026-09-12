@@ -75,6 +75,28 @@ export default function HomePage() {
         </ul>
       </section>
 
+      {/* ===== BEGINNER CONTEXT ===== */}
+      <section className="intro-section fade-in" style={{ marginTop: 'var(--space-10)' }}>
+        <h2>📚 Beginner Concepts</h2>
+        <div className="concept-grid">
+          <div className="concept-card">
+            <h3>What is RAG?</h3>
+            <p>
+              <strong>Retrieval-Augmented Generation (RAG)</strong> combines the power of LLMs with your own data. Instead of relying solely on what the model was trained on, RAG retrieves relevant documents from your knowledge base and includes them in the prompt, giving the LLM up-to-date, accurate information.
+            </p>
+            <p><strong>Why it matters:</strong> Without RAG, LLMs can hallucinate or provide outdated information. With RAG, you ground the model's responses in your specific data.</p>
+          </div>
+          <div className="concept-card">
+            <h3>AI Basics</h3>
+            <p><strong>Tokens:</strong> Pieces of text that LLMs process (roughly 4 characters per token)</p>
+            <p><strong>Prompts:</strong> The input text you give to an LLM</p>
+            <p><strong>Embeddings:</strong> Numerical vectors that capture semantic meaning — similar meanings have similar vectors</p>
+            <p><strong>Vector Stores:</strong> Databases optimized for storing and searching embeddings by similarity</p>
+            <p><strong>Context Window:</strong> How much text (tokens) an LLM can process at once — limits how much information you can provide</p>
+          </div>
+        </div>
+      </section>
+
       {/* ===== LEARNING PATH OVERVIEW ===== */}
       <section className="learning-path fade-in">
         <h2>Learning Path</h2>
@@ -98,7 +120,14 @@ export default function HomePage() {
                   <div className={`module-icon ${m.iconType}`}>{m.icon}</div>
                   <div>
                     <h3>{m.title}</h3>
-                    <span className="feature-count">{moduleFeatures.length} features · {completedCount} completed</span>
+                    <div className="module-card-badges">
+                      <span className={`difficulty-badge ${m.difficultyColor || 'badge-beginner'}`}>
+                        {m.difficulty || 'Beginner'}
+                      </span>
+                      <span className="time-badge">
+                        {m.estimatedTime || 30} min
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <p>{m.description}</p>

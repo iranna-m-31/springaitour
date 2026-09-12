@@ -1,9 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useProgress } from './HomePage'
 import { lessons } from '../data/lessons'
-import ArchitectureDiagram from './ArchitectureDiagram'
 import Checkpoint from './Checkpoint'
 import ProgressiveDisclosure from './ProgressiveDisclosure'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 export default function CapstonePage() {
   const { completed } = useProgress()
@@ -82,28 +83,47 @@ export default function CapstonePage() {
         <p>
           The Support Assistant combines all Spring AI features into a cohesive architecture:
         </p>
+        <div
+          className="architecture-markdown"
+          style={{
+            background: 'var(--card-bg)',
+            border: '1px solid var(--card-border)',
+            borderRadius: 'var(--radius-lg)',
+            padding: 'var(--space-6)',
+          }}
+        >
+          <Markdown remarkPlugins={[remarkGfm]}>
+            {`### Support Assistant Architecture
 
-        <ArchitectureDiagram
-          components={[
-            { id: 'ui', label: 'User Interface', type: 'client', description: 'Web UI for chat interactions' },
-            { id: 'chat-client', label: 'Spring AI ChatClient', type: 'spring', description: 'Fluent API for LLM calls' },
-            { id: 'rag', label: 'RAG Pipeline', type: 'ai', description: 'Vector store retrieval pipeline' },
-            { id: 'tools', label: 'Tool Executor', type: 'java', description: '@Tool annotated Spring services' },
-            { id: 'memory', label: 'Conversation Memory', type: 'app', description: 'VectorStore-backed history' },
-            { id: 'mcp', label: 'MCP Client/Server', type: 'spring', description: 'Standard MCP protocol integration' },
-            { id: 'observability', label: 'Observability & Metrics', type: 'inspector', description: 'Micrometer + OpenTelemetry' },
-            { id: 'eval', label: 'Evaluation Framework', type: 'ai', description: 'LLM-as-a-Judge evaluation' }
-          ]}
-          connections={[
-            { from: 'User Interface', to: 'Spring AI ChatClient' },
-            { from: 'Spring AI ChatClient', to: 'RAG Pipeline' },
-            { from: 'Spring AI ChatClient', to: 'Tool Executor' },
-            { from: 'Spring AI ChatClient', to: 'Conversation Memory' },
-            { from: 'Spring AI ChatClient', to: 'MCP Client/Server' },
-            { from: 'Spring AI ChatClient', to: 'Observability & Metrics' },
-            { from: 'Spring AI ChatClient', to: 'Evaluation Framework' }
-          ]}
-        />
+The Support Assistant is a complete Spring AI application that integrates every concept covered in this tutorial. Here is how the components fit together:
+
+**Request Lifecycle:**
+
+1. **User Interface** — The web UI sends a chat message to the backend.
+2. **Spring AI ChatClient** — Receives the request and orchestrates the full pipeline. This is the central hub; every other component hangs off the advisor chain.
+3. **RAG Pipeline** — Before the LLM call, the query is embedded and a similarity search retrieves the top-k relevant chunks from the vector store. These chunks augment the prompt so the LLM answers from your own documentation.
+4. **Tool Executor** — If the user's request requires an action (e.g. "check health"), the LLM decides to call a \`@Tool\`-annotated Spring service. The tool runs, and the result is fed back into the conversation.
+5. **Conversation Memory** — Each request is stored in a vector-backed ChatMemory so the assistant remembers previous turns within the same session.
+6. **MCP Client/Server** — External tools are exposed through the Model Context Protocol, a standard interface for discovering and invoking services without custom integration code.
+7. **Observability & Metrics** — Micrometer + OpenTelemetry instrument every LLM call, exposing traces and metrics through Actuator endpoints.
+8. **Evaluation Framework** — An LLM-as-a-Judge evaluates responses for relevancy and factuality, returning a PASS/FAIL verdict.
+
+**Data Flow:**
+
+\`\`\`
+User → UI → ChatClient → [RAG → Vector Store] → [Tools → @Tool Methods]
+                              → [Memory → ChatMemory]
+                              → [MCP → External Servers]
+                              → [Observability → Micrometer → Actuator]
+                              → [Evaluation → LLM-as-a-Judge]
+                              → Response → User
+\`\`\`
+
+**Key Insight:** The ChatClient is the only component the user talks to. Everything else (RAG, tools, memory, MCP, observability, evaluation) runs through the advisor chain — Spring AI handles the wiring, so your application code stays clean and focused on business logic.
+
+See the [Spring AI Capstone Guide](https://docs.spring.io/spring-ai/reference/getting-started.html) for details.`}
+          </Markdown>
+        </div>
       </section>
 
       {/* Interactive Capstone Demo */}

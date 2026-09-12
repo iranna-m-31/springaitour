@@ -1,44 +1,29 @@
 import { useRef, useState } from 'react'
-import { fetchSource, type SourceResponse } from '../api/source'
+import type { SourceResponse } from '../api/source'
 import CodeView from './CodeView'
 import DemoPanel from './DemoPanel'
 import SetupBanner from './SetupBanner'
 import InPageNav from './InPageNav'
 import Skeleton from './Skeleton'
 import CodeDiff from './CodeDiff'
-import ArchitectureDiagram from './ArchitectureDiagram'
 import Checkpoint from './Checkpoint'
 import PrerequisitePanel from './PrerequisitePanel'
 import { features, modules } from '../data/features'
 import type { Feature } from '../data/features'
 import { useProgress } from './HomePage'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface FeaturePageProps {
   feature: Feature
 }
 
 export default function FeaturePage({ feature }: FeaturePageProps) {
-  const [source, setSource] = useState<SourceResponse | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [source] = useState<SourceResponse | null>(null)
+  const [loading] = useState(false)
+  const [error] = useState<string | null>(null)
+  const [showCode, setShowCode] = useState(true)
   const contentRef = useRef<HTMLDivElement>(null)
-
-  const handleLoadSource = async () => {
-    if (!feature.sourceFiles || feature.sourceFiles.length === 0) return
-    setLoading(true)
-    setError(null)
-    try {
-      const data = await fetchSource(feature.id)
-      // Use the first file's content for the viewer
-      if (data && data.length > 0) {
-        setSource(data[0])
-      }
-    } catch (err) {
-      setError('Failed to load source code')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
@@ -86,19 +71,21 @@ export default function FeaturePage({ feature }: FeaturePageProps) {
           </div>
         )}
 
-        {/* Architecture Diagram */}
-        {feature.architectureDiagram && (
+        {/* Architecture */}
+        {feature.architecture && (
           <section className="architecture-section" style={{ marginTop: 'var(--space-8)' }}>
             <h2>Architecture</h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-4)' }}>
-              Visualizing the Spring AI request lifecycle for this feature.
-              Click components to learn more about their role.
-            </p>
-            <ArchitectureDiagram
-              components={feature.architectureDiagram.components}
-              connections={feature.architectureDiagram.connections}
-              docImage={feature.architectureDiagram?.docImage}
-/>
+            <div
+              className="architecture-markdown"
+              style={{
+                background: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
+                borderRadius: 'var(--radius-lg)',
+                padding: 'var(--space-6)',
+              }}
+            >
+              <Markdown remarkPlugins={[remarkGfm]}>{feature.architecture}</Markdown>
+            </div>
           </section>
         )}
 
@@ -135,13 +122,26 @@ export default function FeaturePage({ feature }: FeaturePageProps) {
           View the actual Spring AI source code behind this feature.
           Key implementation lines are highlighted in blue.
         </p>
-        <button className="source-load-btn" onClick={handleLoadSource} disabled={loading}>
-          {loading ? 'Loading source...' : '📄 View Source Code'}
-        </button>
+        <div className="code-toggle-wrapper">
+          <button
+            type="button"
+            className={`code-toggle-btn${source ? '' : ' code-toggle-hide'}`}
+            onClick={() => setShowCode(!showCode)}
+            aria-label={showCode ? 'Hide code' : 'Show code'}
+            title={showCode ? 'Hide code' : 'Show code'}
+          >
+            {showCode ? '◀ Hide Code' : '▶ Show Code'}
+          </button>
+        </div>
+        {showCode && source ? (
+          <CodeView code={source.content} filename={source.file} />
+        ) : source && (
+          <p className="code-preview">{source.content?.split('\n').slice(0, 10).join('\n') || 'No source loaded'}{source.content?.split('\n').length > 10 ? `... (+${source.content.split('\n').length - 10} more lines)` : ''}</p>
+        )}
         {error && <p className="error-box">{error}</p>}
         {loading && !source && <Skeleton lines={8} />}
-        {source && (
-          <CodeView code={source.content} filename={source.file} />
+        {loading && source && (
+          <CodeView code={source.content} filename={source.file} collapsed />
         )}
       </section>
 
@@ -199,7 +199,7 @@ export default function FeaturePage({ feature }: FeaturePageProps) {
 
       {/* Checkpoint - Test understanding at the end of each feature */}
       {feature.checkpoint && (
-        <section className="checkpoint-section" style={{ marginTop: 'var(--space-8)', padding: 'var(--space-6)', background: 'var(--card-bg)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--card-border)' }}>
+        <section className="checkpoint-section" style={{ marginTop: 'var(--space-8)', padding: 'var(--space-4) var(--space-6)', background: 'var(--card-bg)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--card-border)', maxWidth: '800px' }}>
           <h2>Check Your Understanding</h2>
           <Checkpoint
             type={feature.checkpoint.type}

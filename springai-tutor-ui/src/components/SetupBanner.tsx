@@ -19,6 +19,7 @@ export default function SetupBanner({ compact = false }: SetupBannerProps) {
 
   if (loading) return null
   if (!health) return null
+
   if (health.status === 'ready') return null
 
   return (
@@ -43,6 +44,19 @@ export default function SetupBanner({ compact = false }: SetupBannerProps) {
         </li>
         <li>Restart the server: <code>./gradlew bootRun</code></li>
       </ol>
+      {!health.apiKeyConfigured && (
+        <p className="setup-banner-detail">
+          API key: <strong>Missing</strong> — add <code>OPENROUTER_API_KEY</code> to <code>.env</code>
+        </p>
+      )}
+      {health.apiKeyConfigured && (
+        <p className="setup-banner-detail">
+          API key: <strong>Configured</strong> — but the server still needs attention. Check the model and base URL.
+        </p>
+      )}
+      <p className="setup-banner-detail">
+        Current config: model = <code>{health.chatModel || 'not set'}</code>, base URL = <code>{health.baseUrl}</code>
+      </p>
       <p className="setup-banner-detail">
         Current config: model = <code>{health.chatModel || 'not set'}</code>, base URL = <code>{health.baseUrl}</code>
       </p>

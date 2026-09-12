@@ -2,13 +2,14 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import InPageNav from './InPageNav'
 import SetupBanner from './SetupBanner'
 import CodeDiff from './CodeDiff'
-import ArchitectureDiagram from './ArchitectureDiagram'
 import Checkpoint from './Checkpoint'
 import PrerequisitePanel from './PrerequisitePanel'
 import APIInspector from './APIInspector'
 import RuntimeTimeline from './RuntimeTimeline'
 import { useProgress } from './HomePage'
 import { lessons } from '../data/lessons'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface LessonPageProps {
   lesson: typeof lessons[0]
@@ -268,28 +269,44 @@ export default function LessonPage({ lesson }: LessonPageProps) {
         <h2>Runtime Behavior</h2>
         <p>
           Understand what happens when the application runs.
-          This section shows the execution flow, architecture diagrams, and runtime timelines.
+          This section shows the execution flow and runtime timelines.
         </p>
 
-        {/* Architecture Diagram */}
+        {/* Architecture */}
         {lesson.interactive.showArchitectureDiagram && (
           <div className="architecture-section" style={{ marginTop: 'var(--space-6)' }}>
             <h3>System Architecture</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-4)' }}>
-              Visualizing the Spring AI request lifecycle for this concept.
-              Click components to learn more about their role.
-            </p>
-            <ArchitectureDiagram
-              components={lesson.interactive.showArchitectureDiagram === true ?
-                [{ id: 'app', label: 'Application', type: 'java', description: 'Your Spring Boot application' },
-                 { id: 'chat-client', label: 'ChatClient', type: 'spring', description: 'Spring AI fluent client' },
-                 { id: 'llm', label: 'LLM Provider', type: 'spring', description: 'OpenAI, Ollama, or Azure'}] :
-                []}
-              connections={[
-                { from: 'Application', to: 'ChatClient' },
-                { from: 'ChatClient', to: 'LLM Provider' }
-              ]}
-            />
+            <div
+              className="architecture-markdown"
+              style={{
+                background: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
+                borderRadius: 'var(--radius-lg)',
+                padding: 'var(--space-6)',
+              }}
+            >
+              <Markdown remarkPlugins={[remarkGfm]}>
+                {`### ${lesson.title} — System Architecture
+
+The core flow for this concept follows the Spring AI request lifecycle:
+
+**Request Lifecycle:**
+
+1. **Application** — Your Spring Boot application receives the request via a controller or service method.
+2. **ChatClient** — Spring AI's fluent API constructs the prompt, applies advisors, and calls the model.
+3. **LLM Provider** — OpenAI, Ollama, Azure, or another provider generates the response.
+
+**Flow:**
+
+\`\`\`
+Application → ChatClient → LLM Provider → Response → Application → User
+\`\`\`
+
+The ChatClient is the central hub: it handles prompt building, parameter serialization, streaming, tool calling, and response parsing. By using ChatClient, your application is decoupled from any specific LLM provider — you can switch providers by changing configuration alone.
+
+See the [Spring AI ChatClient documentation](https://docs.spring.io/spring-ai/reference/api/chatclient.html) for details.`}
+              </Markdown>
+            </div>
           </div>
         )}
 

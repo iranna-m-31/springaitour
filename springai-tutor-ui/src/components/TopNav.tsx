@@ -41,6 +41,7 @@ export default function TopNav() {
           <button type="button" className={`top-nav-link ${isActive('/introduction') || location.pathname.startsWith('/feature/') ? 'active' : ''}`} onClick={() => handleGo('/introduction')}>Learn</button>
           <button type="button" className={`top-nav-link ${isActive('/playground') || isActive('/lab') ? 'active' : ''}`} onClick={() => handleGo('/lab')}>Lab</button>
           <button type="button" className="top-nav-link" onClick={() => window.open('https://docs.spring.io/spring-ai/reference/', '_blank', 'noopener,noreferrer')}>Docs</button>
+          <button type="button" className="top-nav-link" onClick={() => window.open('https://github.com/spring-projects/spring-ai', '_blank', 'noopener,noreferrer')}>GitHub</button>
         </nav>
 
         <div className="top-nav-right">
@@ -76,6 +77,7 @@ export default function TopNav() {
           <button type="button" className={isActive('/introduction') || location.pathname.startsWith('/feature/') ? 'active' : ''} onClick={() => handleGo('/introduction')}>Learn</button>
           <button type="button" className={isActive('/playground') || isActive('/lab') ? 'active' : ''} onClick={() => handleGo('/lab')}>Lab</button>
           <button type="button" onClick={() => window.open('https://docs.spring.io/spring-ai/reference/', '_blank', 'noopener,noreferrer')}>Docs</button>
+          <button type="button" onClick={() => window.open('https://github.com/spring-projects/spring-ai', '_blank', 'noopener,noreferrer')}>GitHub</button>
           <button type="button" className={isActive('/settings') ? 'active' : ''} onClick={() => handleGo('/settings')}>Settings</button>
         </div>
       )}

@@ -1,5 +1,5 @@
 
-import { useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import atomOneDark from 'react-syntax-highlighter/dist/esm/styles/prism/atom-dark'
 import CopyButton from './CopyButton'
@@ -11,6 +11,8 @@ export interface CodeViewProps {
   filename: string
   /** Optional: line numbers to highlight (1-based) */
   highlightLines?: number[]
+  /** Optional: start collapsed */
+  collapsed?: boolean
 }
 
 /** Map a filename to a syntax-highlighter language id. */
@@ -53,6 +55,7 @@ export default function CodeView({
   code,
   filename,
   highlightLines,
+  collapsed: initialCollapsed = false,
 }: CodeViewProps) {
   const language = useMemo(
     () => languageFromFilename(filename),
@@ -63,6 +66,8 @@ export default function CodeView({
     () => code.split(/\r\n|\r|\n/).length,
     [code]
   )
+
+  const [collapsed, setCollapsed] = useState(initialCollapsed)
 
   return (
     <div className="code-view">
@@ -80,47 +85,58 @@ export default function CodeView({
         </span>
 
         <div className="code-view-actions">
+          <button
+            type="button"
+            className="code-toggle-btn"
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? 'Show code' : 'Hide code'}
+            title={collapsed ? 'Show code' : 'Hide code'}
+          >
+            {collapsed ? '▶ Show Code' : '◀ Hide Code'}
+          </button>
           <CopyButton value={code} />
         </div>
       </div>
 
-      <div className="code-container">
-        <SyntaxHighlighter
-          language={language}
-          style={atomOneDark}
-          showLineNumbers
-          wrapLines
-          lineNumberStyle={{
-            color: '#484f58',
-            minWidth: '2.5em',
-            paddingRight: '1em',
-            userSelect: 'none',
-          }}
-          customStyle={{
-            margin: 0,
-            padding: '1rem 0',
-            background: '#0d1117',
-            color: '#ffffff',
-            fontSize: '0.8125rem',
-            flex: 1,
-            overflow: 'auto',
-          }}
-          lineProps={(lineNumber: number) => {
-            const isHighlighted =
-              highlightLines?.includes(lineNumber)
+      {!collapsed && (
+        <div className="code-container">
+          <SyntaxHighlighter
+            language={language}
+            style={atomOneDark}
+            showLineNumbers
+            wrapLines
+            lineNumberStyle={{
+              color: '#484f58',
+              minWidth: '2.5em',
+              paddingRight: '1em',
+              userSelect: 'none',
+            }}
+            customStyle={{
+              margin: 0,
+              padding: '1rem 0',
+              background: '#0d1117',
+              color: '#ffffff',
+              fontSize: '0.8125rem',
+              flex: 1,
+              overflow: 'auto',
+            }}
+            lineProps={(lineNumber: number) => {
+              const isHighlighted =
+                highlightLines?.includes(lineNumber)
 
-            return isHighlighted
-              ? {
-                  style: {
-                    background: 'rgba(59, 130, 246, 0.18)',
-                  },
-                }
-              : {}
-          }}
-        >
-          {code}
-        </SyntaxHighlighter>
-      </div>
+              return isHighlighted
+                ? {
+                    style: {
+                      background: 'rgba(59, 130, 246, 0.18)',
+                    },
+                  }
+                : {}
+            }}
+          >
+            {code}
+          </SyntaxHighlighter>
+        </div>
+      )}
     </div>
   )
 }

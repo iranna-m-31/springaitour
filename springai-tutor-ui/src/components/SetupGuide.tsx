@@ -37,7 +37,8 @@ export default function SetupGuide() {
   const isReady = health?.status === 'ready'
 
   return (
-    <section className="setup-section">
+    <>
+      <section className="setup-section">
       <h2>📦 Repository Setup</h2>
 
       <div className="setup-steps">
@@ -165,5 +166,43 @@ OPENROUTER_API_KEY=sk-or-v1-YOUR-KEY</code></pre>
         </div>
       )}
     </section>
+
+    {/* ===== TROUBLESHOOTING ===== */}
+    <section className="troubleshooting-section">
+      <h2>🔧 Troubleshooting & Common Issues</h2>
+      <div className="troubleshooting-grid">
+        <div className="troubleshooting-item">
+          <h3>API key not configured</h3>
+          <p><strong>Symptom:</strong> "OPENROUTER_API_KEY not configured" or LLM calls return errors</p>
+          <p><strong>Cause:</strong> The .env file is missing or the key is incorrect</p>
+          <p><strong>Solution:</strong> Copy .env.example to .env, paste your key from <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer">openrouter.ai/keys</a>, and restart with <code>./gradlew bootRun</code></p>
+        </div>
+        <div className="troubleshooting-item">
+          <h3>Server not running on port 8080</h3>
+          <p><strong>Symptom:</strong> Health check fails or page shows "Server not reachable"</p>
+          <p><strong>Cause:</strong> Spring Boot hasn't started or is on a different port</p>
+          <p><strong>Solution:</strong> Run <code>./gradlew bootRun</code> and wait for "Started SpringaiApplication" in the terminal. Ensure port 8080 is not in use.</p>
+        </div>
+        <div className="troubleshooting-item">
+          <h3>CORS errors in browser console</h3>
+          <p><strong>Symptom:</strong> "Blocked by CORS policy" errors when calling API endpoints</p>
+          <p><strong>Cause:</strong> Frontend and backend are on different origins</p>
+          <p><strong>Solution:</strong> The dev server uses Vite proxy (vite.config.ts). In production, ensure both are served from the same origin. Check that cors.allowedOrigins matches your domain.</p>
+        </div>
+        <div className="troubleshooting-item">
+          <h3>Docker not available for vector stores</h3>
+          <p><strong>Symptom:</strong> RAG or vector store demos fail with connection errors</p>
+          <p><strong>Cause:</strong> RAG demo requires a vector store, which may need Docker</p>
+          <p><strong>Solution:</strong> Install Docker Desktop, then run <code>docker run -p 6333:6333</code> for your vector store. Alternatively, use SimpleVectorStore for demos (in-memory).</p>
+        </div>
+        <div className="troubleshooting-item">
+          <h3>Module not found errors</h3>
+          <p><strong>Symptom:</strong> Gradle build fails with "package not found" or "dependency resolution" errors</p>
+          <p><strong>Cause:</strong> Missing dependencies or network issues</p>
+          <p><strong>Solution:</strong> Run <code>./gradlew --refresh-dependencies</code> to re-download. Ensure you have internet access. Check the Java version (requires Java 21+).</p>
+        </div>
+      </div>
+    </section>
+    </>
   )
 }

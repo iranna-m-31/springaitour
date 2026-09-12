@@ -52,6 +52,7 @@ export default function DemoPanel({ feature }: DemoPanelProps) {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [streaming, setStreaming] = useState(false)
+  const [activeParamGroup, setActiveParamGroup] = useState<string | null>(null)
   const streamAbortRef = useRef<(() => void) | null>(null)
 
   // Reset state when the active feature changes.
@@ -68,6 +69,7 @@ export default function DemoPanel({ feature }: DemoPanelProps) {
     setError(null)
     setLoading(false)
     setStreaming(false)
+    setActiveParamGroup(null)
     streamAbortRef.current?.()
     streamAbortRef.current = null
   }, [feature.id])
@@ -176,8 +178,9 @@ export default function DemoPanel({ feature }: DemoPanelProps) {
   const handleParamGroupCall = async (group: { label: string; endpoint: string; paramNames: string[]; description: string }) => {
     if (isConfigOnly(feature)) return
     setLoading(true)
-    setResponse(null)
     setError(null)
+    setResponse(null)
+    setActiveParamGroup(group.label)
 
     const groupParams: Record<string, string> = {}
     group.paramNames.forEach((name) => {
@@ -192,6 +195,7 @@ export default function DemoPanel({ feature }: DemoPanelProps) {
       setResponse(typeof data === 'string' ? data : JSON.stringify(data, null, 2))
     }
     setLoading(false)
+    setActiveParamGroup(null)
   }
 
   const isConfigOnlyFeature = isConfigOnly(feature)
@@ -294,7 +298,7 @@ export default function DemoPanel({ feature }: DemoPanelProps) {
                 onClick={() => handleParamGroupCall(group)}
                 disabled={loading}
               >
-                {loading ? 'Loading...' : group.label}
+                {loading && activeParamGroup === group.label ? 'Loading...' : group.label}
               </button>
             ))}
           </div>
