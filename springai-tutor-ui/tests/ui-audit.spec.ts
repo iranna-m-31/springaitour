@@ -356,14 +356,12 @@ test.describe('UI Audit – routes, navigation, and controls', () => {
     // Do NOT click – triggers external GitHub download
   })
 
-  // ---- 18. Local Lab Panel – visible and has refresh button ----
-  test('Local Lab Panel – visible in right rail', async ({ page }) => {
+  // ---- 18. Local Lab Panel - removed from UI ----
+  test('Local Lab Panel is removed from UI', async ({ page }) => {
     await page.goto(`${UI_BASE}/`, { waitUntil: 'domcontentloaded' })
     const panel = page.locator('.local-lab-panel')
-    await expect(panel).toBeVisible({ timeout: 5000 })
-    const refreshBtn = panel.locator('.btn').first()
-    await expect(refreshBtn).toBeVisible()
-    // Do NOT click – triggers backend health check
+    await expect(panel).toHaveCount(0)
+    // Lab panel removed - right rail now only shows main content
   })
 
   // ---- 19. Backend-dependent smoke (only if backend is ready) ----

@@ -97,7 +97,8 @@ export default function FeaturePage({ feature }: FeaturePageProps) {
             <ArchitectureDiagram
               components={feature.architectureDiagram.components}
               connections={feature.architectureDiagram.connections}
-            />
+              docImage={feature.architectureDiagram?.docImage}
+/>
           </section>
         )}
 
@@ -159,13 +160,13 @@ export default function FeaturePage({ feature }: FeaturePageProps) {
             </a>
           </li>
           <li>
-            <a href="https://docs.spring.io/spring-ai/reference/chat/chat-client.html" target="_blank" rel="noreferrer">
+            <a href="https://docs.spring.io/spring-ai/reference/api/chatclient.html" target="_blank" rel="noreferrer">
               ChatClient API →
             </a>
           </li>
           <li>
-            <a href="https://docs.spring.io/spring-ai/reference/model/model-index.html" target="_blank" rel="noreferrer">
-              Models Overview →
+            <a href="https://docs.spring.io/spring-ai/reference/concepts.html" target="_blank" rel="noreferrer">
+              AI Concepts Overview →
             </a>
           </li>
         </ul>

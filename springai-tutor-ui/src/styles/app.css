@@ -692,3 +692,56 @@ code { background: var(--code-bg-inline); padding: 2px 6px; border-radius: var(-
 .nav-prev { width: 90px; text-align: left; }
 .nav-next { width: 70px; text-align: center; }
 .nav-next--completed { background: var(--spring-green); color: #fff; border-color: var(--spring-green); font-weight: 600; }
+
+/* ---------- Architecture Diagram ---------- */
+.architecture-section {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin: var(--space-8) 0;
+}
+.architecture-diagram {
+  animation: fadeIn var(--duration-normal) var(--ease);
+}
+.architecture-diagram-container {
+  animation: fadeIn var(--duration-normal) var(--ease) 0.1s both;
+}
+.architecture-component {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.architecture-component:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.architecture-component:active {
+  transform: scale(1.01);
+}
+.architecture-component-info {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  max-width: 400px;
+  animation: fadeIn var(--duration-normal) var(--ease) 0.3s both;
+}
+.architecture-info-header {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.architecture-info-desc {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.architecture-doc-link {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.architecture-doc-link:hover {
+  color: var(--spring-green);
+}

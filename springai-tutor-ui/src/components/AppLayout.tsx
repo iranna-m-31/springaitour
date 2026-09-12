@@ -1,20 +1,29 @@
 import { Outlet } from 'react-router-dom'
+import { useState } from 'react'
 import TopNav from './TopNav'
 import LearningSidebar from './LearningSidebar'
-import LocalLabPanel from './LocalLabPanel'
 import SearchPalette from './SearchPalette'
 
 export default function AppLayout() {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
   return (
-    <div className="app-layout">
+    <div className={`app-layout${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
       <TopNav />
-      <LearningSidebar />
+      <div className="sidebar-container">
+        <button
+          className="sidebar-toggle"
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          aria-label={sidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
+          title={sidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
+        >
+          {sidebarCollapsed ? '▶' : '◀'}
+        </button>
+        <LearningSidebar />
+      </div>
       <main className="lesson-content">
         <Outlet />
       </main>
-      <aside className="lab-panel" aria-label="Local lab">
-        <LocalLabPanel />
-      </aside>
       <SearchPalette />
     </div>
   )

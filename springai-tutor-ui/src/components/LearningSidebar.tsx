@@ -96,9 +96,6 @@ export default function LearningSidebar() {
                           <span className="lesson-title">{lesson.title}</span>
                           {isCompleted && <span className="lesson-check">✓</span>}
                         </Link>
-                        <span className="lesson-time" title={`${lesson.estimatedTime} min`}>
-                          {lesson.difficulty === 'beginner' ? '🟢' : lesson.difficulty === 'intermediate' ? '🟡' : lesson.difficulty === 'advanced' ? '🟠' : '🔴'}
-                        </span>
                       </li>
                     )
                   })}

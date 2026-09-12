@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { fetchHealth, type HealthStatus } from '../api/health'
+import ThemeToggle from './ThemeToggle'
 
 export default function TopNav() {
   const location = useLocation()
@@ -56,6 +57,7 @@ export default function TopNav() {
           <button type="button" className="btn btn-primary btn-sm top-nav-cta" onClick={() => handleGo('/introduction')}>
             Get Started
           </button>
+          <ThemeToggle />
           <button
             type="button"
             className="menu-toggle"

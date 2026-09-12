@@ -14,6 +14,9 @@ interface ArchitectureDiagramProps {
 
   /** Optional on-click handler for component clicks */
   onComponentClick?: (id: string) => void
+
+  /** Optional official Spring AI documentation diagram image URL */
+  docImage?: string
 }
 
 const typeIcons: Record<string, string> = {
@@ -42,7 +45,7 @@ const typeColors: Record<string, { bg: string; border: string; text: string; acc
  * Visualizes the flow:
  *   User → ChatClient → Advisor Chain → VectorStore → ChatModel → LLM → Response
  */
-export default function ArchitectureDiagram({ components, connections, onComponentClick }: ArchitectureDiagramProps) {
+export default function ArchitectureDiagram({ components, connections, onComponentClick, docImage }: ArchitectureDiagramProps) {
   const [selected, setSelected] = useState<string | null>(null)
 
   const handleClick = (id: string) => {
@@ -50,36 +53,48 @@ export default function ArchitectureDiagram({ components, connections, onCompone
     onComponentClick?.(id)
   }
 
+  const availableWidth = typeof window !== 'undefined' ? window.innerWidth : 1200
+
   return (
     <div className="architecture-diagram" aria-label="Spring AI request lifecycle">
-      <div className="architecture-diagram-container" style={{ position: 'relative', padding: 'var(--space-4)', minHeight: '200px' }}>
-        {/* SVG-based connections */}
-        <svg className="architecture-connections" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}>
-          <defs>
-            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
-              <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
-            </marker>
-          </defs>
-          {connections.map(conn => {
-            const fromComp = components.find(c => c.id === conn.from)
-            const toComp = components.find(c => c.id === conn.to)
-            return (
-              <line
-                key={`${conn.from}-${conn.to}`}
-                x1={fromComp ? 80 : 0}
-                y1={fromComp ? 40 : 0}
-                x2={toComp ? 80 : 0}
-                y2={toComp ? 40 : 0}
-                stroke="#94a3b8"
-                strokeWidth="2"
-                markerEnd="url(#arrowhead)"
-              />
-            )
-          })}
-        </svg>
+      <div className="architecture-diagram-container" style={{ position: 'relative', padding: 'var(--space-4)' }}>
+        {/* Official Spring AI Documentation Diagram Image */}
+        {docImage && availableWidth > 600 && (
+          <div style={{ position: 'relative', marginBottom: 'var(--space-4)' }}>
+            <img
+              src={docImage}
+              alt="Spring AI architecture diagram"
+              style={{
+                width: '100%',
+                maxWidth: '900px',
+                margin: '0 auto',
+                borderRadius: 'var(--radius-md)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                display: 'block',
+              }}
+            />
+            <a
+              className="architecture-doc-link"
+              href="https://docs.spring.io/spring-ai/reference/"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                position: 'absolute',
+                bottom: '8px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                fontSize: '0.6875rem',
+                color: 'var(--text-muted)',
+                textDecoration: 'none',
+              }}
+            >
+              View official docs →
+            </a>
+          </div>
+        )}
 
-        {/* Component boxes */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
+        {/* Component boxes - shown on mobile or alongside image on larger screens */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
           {components.map(comp => {
             const colors = typeColors[comp.type] || typeColors.java
             const isSelected = selected === comp.id
@@ -96,7 +111,8 @@ export default function ArchitectureDiagram({ components, connections, onCompone
                   border: `2px solid ${isSelected ? colors.text : colors.border}`,
                   borderRadius: '12px',
                   padding: '16px',
-                  width: '160px',
+                  width: '100%',
+                  maxWidth: availableWidth > 600 ? '160px' : '100%',
                   textAlign: 'center',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
@@ -130,19 +146,44 @@ export default function ArchitectureDiagram({ components, connections, onCompone
             )
           })}
         </div>
-      </div>
 
-      {/* Selected component info */}
-      {selected && (
-        <div className="architecture-component-info" style={{ marginTop: 'var(--space-4)', padding: 'var(--space-4)', background: 'var(--card-bg)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--card-border)' }}>
-          <h4 className="architecture-info-header" style={{ color: 'var(--text-primary)', marginBottom: 'var(--space-2)' }}>
-            {components.find(c => c.id === selected)?.label}
-          </h4>
-          <p className="architecture-info-desc" style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            {components.find(c => c.id === selected)?.description}
-          </p>
-        </div>
-      )}
+        {/* SVG-based connections - positioned behind the diagram */}
+        <svg className="architecture-connections" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}>
+          <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+            </marker>
+          </defs>
+          {connections.map(conn => {
+            const fromComp = components.find(c => c.id === conn.from)
+            const toComp = components.find(c => c.id === conn.to)
+            return (
+              <line
+                key={`${conn.from}-${conn.to}`}
+                x1={fromComp ? 80 : 0}
+                y1={fromComp ? 40 : 0}
+                x2={toComp ? 80 : 0}
+                y2={toComp ? 40 : 0}
+                stroke="#94a3b8"
+                strokeWidth="2"
+                markerEnd="url(#arrowhead)"
+              />
+            )
+          })}
+        </svg>
+
+        {/* Selected component info */}
+        {selected && (
+          <div className="architecture-component-info" style={{ marginTop: 'var(--space-4)', padding: 'var(--space-4)', background: 'var(--card-bg)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--card-border)' }}>
+            <h4 className="architecture-info-header" style={{ color: 'var(--text-primary)', marginBottom: 'var(--space-2)' }}>
+              {components.find(c => c.id === selected)?.label}
+            </h4>
+            <p className="architecture-info-desc" style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+              {components.find(c => c.id === selected)?.description}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

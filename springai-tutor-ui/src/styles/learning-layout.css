@@ -7,17 +7,26 @@
   display: grid;
   grid-template-areas:
     "topnav topnav topnav"
-    "sidebar main lab";
-  grid-template-columns: 280px minmax(0, 1fr) 300px;
+    "sidebar main main";
+  grid-template-columns: 280px 1fr;
   grid-template-rows: auto 1fr;
   min-height: 100vh;
   background: var(--content-bg);
+  transition: grid-template-columns 0.3s ease;
+}
+
+.app-layout.sidebar-collapsed {
+  grid-template-columns: 0 1fr;
 }
 
 .top-nav { grid-area: topnav; }
-.learning-sidebar { grid-area: sidebar; }
+.sidebar-container { grid-area: sidebar; position: relative; }
 .lesson-content { grid-area: main; }
-.lab-panel { grid-area: lab; }
+.lab-panel { display: none; }
+
+[data-theme="dark"] .top-nav {
+  background: rgba(11, 17, 33, 0.92);
+}
 
 /* ---------- Top navigation ---------- */
 .top-nav {
@@ -306,9 +315,7 @@
 .lesson-content {
   overflow-y: auto;
   padding: var(--space-8) var(--space-10);
-  max-width: 960px;
   width: 100%;
-  margin: 0 auto;
 }
 
 .home-page,
@@ -337,6 +344,48 @@
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
+}
+
+/* ---------- Sidebar toggle button ---------- */
+.sidebar-toggle {
+  position: fixed;
+  top: 65px;
+  left: 0;
+  z-index: 100;
+  width: 28px;
+  height: 28px;
+  background: var(--accent-primary);
+  color: #fff;
+  border: none;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--duration-fast) var(--ease);
+  box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+}
+
+.sidebar-toggle:hover {
+  background: var(--accent-primary-hover);
+  width: 32px;
+}
+
+/* ---------- Sidebar collapsed state ---------- */
+.sidebar-collapsed .learning-sidebar {
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: width 0.3s ease, opacity 0.3s ease;
+}
+
+.sidebar-collapsed .sidebar-toggle {
+  transform: translateX(0);
+}
+
+.sidebar-collapsed .sidebar-toggle:hover {
+  transform: translateX(4px);
 }
 
 .local-lab-header {
@@ -1194,6 +1243,7 @@
     grid-template-columns: 1fr;
   }
 
+  .sidebar-toggle { display: none; }
   .learning-sidebar,
   .lab-panel { display: none; }
 
@@ -1218,4 +1268,49 @@
 @media (max-width: 640px) {
   .module-grid { grid-template-columns: 1fr; }
   .lesson-nav-bottom { flex-direction: column; align-items: stretch; }
+}
+
+/* ---------- Theme Toggle in TopNav ---------- */
+.top-nav .theme-toggle {
+  background: var(--sidebar-bg);
+  border: 1px solid var(--sidebar-border);
+  color: var(--sidebar-text);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: auto;
+  white-space: nowrap;
+}
+
+.top-nav .theme-toggle:hover {
+  background: var(--sidebar-bg-hover);
+  color: #fff;
+}
+
+/* ---------- Demo Panel Button Group Alignment ---------- */
+.demo-form-actions--grouped {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: var(--space-2) !important;
+  margin-top: var(--space-3) !important;
+}
+
+.demo-form-actions--grouped .try-btn {
+  flex: 1 1 auto;
+  min-width: 80px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* On very small screens, stack the buttons */
+@media (max-width: 480px) {
+  .demo-form-actions--grouped .try-btn {
+    flex: 1 1 100%;
+  }
 }

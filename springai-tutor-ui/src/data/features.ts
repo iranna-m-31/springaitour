@@ -63,6 +63,8 @@ export interface Feature {
       description: string
     }>
     connections: Array<{ from: string; to: string; label?: string }>
+    /** Official Spring AI documentation diagram image URL for this feature */
+    docImage?: string
   }
   /** Checkpoint question at the end of the lesson */
   checkpoint?: {
@@ -167,19 +169,19 @@ export const features: Feature[] = [
           id: 'user',
           label: 'User',
           type: 'java',
-          description: 'The user sends a request to the application'
+          description: 'Sends a text prompt via GET /ai?userInput=...'
         },
         {
           id: 'chatclient',
           label: 'ChatClient',
           type: 'ai',
-          description: 'Spring AI\'s fluent API for LLM interactions'
+          description: 'Spring AI fluent API: .prompt().user().call().content()'
         },
         {
           id: 'llm',
           label: 'LLM Provider',
           type: 'llm',
-          description: 'OpenAI, Anthropic, or other LLM provider'
+          description: 'OpenAI, Anthropic, or OpenRouter — returns the generated text'
         }
       ],
       connections: [
@@ -187,7 +189,8 @@ export const features: Feature[] = [
         { from: 'chatclient', to: 'llm', label: 'LLM Call' },
         { from: 'llm', to: 'chatclient', label: 'Response' },
         { from: 'chatclient', to: 'user', label: 'HTTP Response' }
-      ]
+      ],
+    docImage: '/images/official-diagrams/spring-ai-chat-api.jpg'
     },
     checkpoint: {
       type: 'multiple-choice',
@@ -242,19 +245,19 @@ export const features: Feature[] = [
           id: 'user',
           label: 'User',
           type: 'java',
-          description: 'Sends request with persona selection'
+          description: 'Selects a persona and sends a prompt'
         },
         {
           id: 'chatclient',
           label: 'ChatClient Bean',
           type: 'ai',
-          description: 'Immutable ChatClient with default system prompt'
+          description: 'Immutable bean with defaultSystem set at build time'
         },
         {
           id: 'llm',
           label: 'LLM Provider',
           type: 'llm',
-          description: 'Receives system + user messages'
+          description: 'Receives the merged system + user messages'
         }
       ],
       connections: [
@@ -262,7 +265,8 @@ export const features: Feature[] = [
         { from: 'chatclient', to: 'llm', label: 'System + User Messages' },
         { from: 'llm', to: 'chatclient', label: 'Persona Response' },
         { from: 'chatclient', to: 'user', label: 'HTTP Response' }
-      ]
+      ],
+    docImage: '/images/official-diagrams/chat-client-options-merging.png'
     },
     checkpoint: {
       type: 'multiple-choice',
@@ -329,19 +333,19 @@ export const features: Feature[] = [
           id: 'user',
           label: 'User',
           type: 'java',
-          description: 'Initiates streaming request'
+          description: 'Requests a streamed response'
         },
         {
           id: 'chatclient',
           label: 'ChatClient',
           type: 'app',
-          description: 'Handles streaming response'
+          description: 'Calls prompt().stream() returning Flux<String>'
         },
         {
           id: 'llm',
           label: 'LLM',
           type: 'llm',
-          description: 'Streams tokens as they are generated'
+          description: 'Yields tokens as they are generated'
         }
       ],
       connections: [
@@ -349,7 +353,8 @@ export const features: Feature[] = [
         { from: 'chatclient', to: 'llm', label: 'Prompt' },
         { from: 'llm', to: 'chatclient', label: 'Streaming Tokens' },
         { from: 'chatclient', to: 'user', label: 'Streaming Response' }
-      ]
+      ],
+    docImage: '/images/official-diagrams/advisors-non-stream-vs-stream.jpg'
     },
     checkpoint: {
       type: 'multiple-choice',
@@ -442,31 +447,31 @@ export const features: Feature[] = [
           id: 'user',
           label: 'User',
           type: 'java',
-          description: 'Asks a question requiring tool use'
+          description: 'Asks a question that requires a tool'
         },
         {
           id: 'chatclient',
           label: 'ChatClient',
           type: 'app',
-          description: 'Manages the tool calling loop'
+          description: 'Owns the ToolCallingAdvisor loop'
         },
         {
           id: 'llm',
           label: 'LLM',
           type: 'llm',
-          description: 'Decides which tool to call'
+          description: 'Chooses when a tool call is needed'
         },
         {
           id: 'tools',
           label: 'Tool Registry',
           type: 'ai',
-          description: 'Your @Tool annotated methods'
+          description: '@Tool methods registered with the builder'
         },
         {
           id: 'java',
           label: 'Java Method',
           type: 'java',
-          description: 'Executes the actual logic'
+          description: 'Runs the actual business logic'
         }
       ],
       connections: [
@@ -478,7 +483,8 @@ export const features: Feature[] = [
         { from: 'tools', to: 'llm', label: 'Tool Result' },
         { from: 'llm', to: 'chatclient', label: 'Final Answer' },
         { from: 'chatclient', to: 'user', label: 'Response' }
-      ]
+      ],
+    docImage: '/images/official-diagrams/spring-ai-tool-calling-advisor-flow.png'
     },
     codeDiff: {
       before: "// Without Spring AI: Manual tool calling logic\nMap<String, Object> requestBody = new HashMap<>();\nrequestBody.put(\"model\", \"gpt-4\");\nrequestBody.put(\"messages\", List.of(\n    Map.of(\"role\", \"user\", \"content\", \"What time is it?\")\n));\n// Define tools manually\nList<Map<String, Object>> tools = List.of(\n    Map.of(\n        \"type\", \"function\",\n        \"function\", Map.of(\n            \"name\", \"getCurrentTime\",\n            \"description\", \"Get the current time\",\n            \"parameters\", Map.of(\"type\", \"object\", \"properties\", new HashMap<>())\n        )\n    )\n);\nrequestBody.put(\"tools\", tools);\n// ... send request, parse tool call, execute Java method, send result back...\n",
@@ -539,25 +545,25 @@ export const features: Feature[] = [
           id: 'user',
           label: 'User',
           type: 'java',
-          description: 'Sends message in a conversation'
+          description: 'Sends messages within a conversation'
         },
         {
           id: 'chatclient',
           label: 'ChatClient',
           type: 'app',
-          description: 'Manages conversation context'
+          description: 'Auto-attaches ChatMemory to each call'
         },
         {
           id: 'memory',
           label: 'ChatMemory',
           type: 'ai',
-          description: 'Stores conversation history'
+          description: 'Stores message history by conversationId'
         },
         {
           id: 'llm',
           label: 'LLM',
           type: 'llm',
-          description: 'Sees full conversation context'
+          description: 'Receives full conversation history'
         }
       ],
       connections: [
@@ -567,7 +573,8 @@ export const features: Feature[] = [
         { from: 'llm', to: 'chatclient', label: 'Response' },
         { from: 'chatclient', to: 'memory', label: 'Store New' },
         { from: 'chatclient', to: 'user', label: 'Response' }
-      ]
+      ],
+    docImage: '/images/official-diagrams/spring-ai-message-api.jpg'
     },
     checkpoint: {
       type: 'fill-blank',
@@ -598,37 +605,37 @@ export const features: Feature[] = [
           id: 'user',
           label: 'User',
           type: 'java',
-          description: 'Sends request'
+          description: 'Sends a request to the configured client'
         },
         {
           id: 'chatclient',
           label: 'ChatClient',
           type: 'app',
-          description: 'Main entry point'
+          description: 'Applies the advisor chain before model call'
         },
         {
           id: 'advisor1',
           label: 'Advisor 1',
           type: 'ai',
-          description: 'Logging advisor'
+          description: 'Logs request and response details'
         },
         {
           id: 'advisor2',
           label: 'Advisor N',
           type: 'ai',
-          description: 'Memory / RAG advisor'
+          description: 'Adds memory, RAG, or other behavior'
         },
         {
           id: 'chatmodel',
           label: 'ChatModel',
           type: 'spring',
-          description: 'Core LLM call'
+          description: 'Executes the core LLM request'
         },
         {
           id: 'llm',
           label: 'LLM',
           type: 'llm',
-          description: 'Model provider'
+          description: 'Provider that generates the response'
         }
       ],
       connections: [
@@ -642,7 +649,8 @@ export const features: Feature[] = [
         { from: 'advisor2', to: 'advisor1', label: 'Response' },
         { from: 'advisor1', to: 'chatclient', label: 'Response' },
         { from: 'chatclient', to: 'user', label: 'Response' }
-      ]
+      ],
+      docImage: '/images/official-diagrams/advisors-flow.jpg'
     },
     checkpoint: {
       type: 'multiple-choice',
@@ -689,25 +697,25 @@ export const features: Feature[] = [
           id: 'text',
           label: 'Text',
           type: 'java',
-          description: 'Input text to embed'
+          description: 'User-provided text to convert to an embedding'
         },
         {
           id: 'embedding-model',
           label: 'Embedding Model',
           type: 'ai',
-          description: 'Converts text to vector'
+          description: 'Converts text into a vector of numbers representing semantic meaning'
         },
         {
           id: 'vector-store',
           label: 'Vector Store',
           type: 'spring',
-          description: 'Stores all document vectors'
+          description: 'In-memory store for document embeddings (swap to Qdrant/PGVector for production)'
         },
         {
           id: 'similarity',
           label: 'Similarity Search',
           type: 'spring',
-          description: 'Finds similar vectors'
+          description: 'Finds documents with vectors closest to the query vector'
         }
       ],
       connections: [
@@ -715,7 +723,8 @@ export const features: Feature[] = [
         { from: 'embedding-model', to: 'vector-store', label: 'Vector' },
         { from: 'vector-store', to: 'similarity', label: 'Query' },
         { from: 'similarity', to: 'text', label: 'Similar Results' }
-      ]
+      ],
+    docImage: '/images/official-diagrams/embeddings-api.jpg'
     },
     checkpoint: {
       type: 'multiple-choice',
@@ -769,37 +778,37 @@ export const features: Feature[] = [
           id: 'question',
           label: 'User Question',
           type: 'java',
-          description: 'The query from the user'
+          description: 'The user\'s natural-language query'
         },
         {
           id: 'embedding',
           label: 'Embedding Model',
           type: 'ai',
-          description: 'Converts question to vector'
+          description: 'Converts the query to a vector'
         },
         {
           id: 'vectorstore',
           label: 'Vector Store',
           type: 'spring',
-          description: 'Stores document embeddings'
+          description: 'Holds document embeddings for retrieval'
         },
         {
           id: 'retriever',
           label: 'Retriever',
           type: 'spring',
-          description: 'Finds relevant documents'
+          description: 'Finds top-k similar document chunks'
         },
         {
           id: 'chatclient',
           label: 'ChatClient',
           type: 'app',
-          description: 'Augments prompt with context'
+          description: 'Augments the prompt with retrieved docs'
         },
         {
           id: 'llm',
           label: 'LLM',
           type: 'llm',
-          description: 'Generates answer'
+          description: 'Generates a grounded answer'
         }
       ],
       connections: [
@@ -810,7 +819,8 @@ export const features: Feature[] = [
         { from: 'chatclient', to: 'llm', label: 'Augmented Prompt' },
         { from: 'llm', to: 'chatclient', label: 'Answer' },
         { from: 'chatclient', to: 'question', label: 'Response' }
-      ]
+      ],
+    docImage: '/images/official-diagrams/spring-ai-rag.jpg'
     },
     codeDiff: {
       before: "// Without RAG: The LLM has no access to your documents\nChatClient client = ChatClient.builder(chatModel).build();\nString answer = client.prompt()\n    .user(\"What is RAG?\")\n    .call()\n    .content();\n// The model only knows what it was trained on\n",
@@ -868,25 +878,25 @@ export const features: Feature[] = [
           id: 'user',
           label: 'User',
           type: 'java',
-          description: 'Interacts with MCP tools'
+          description: 'Interacts with MCP tools via stdio/SSE'
         },
         {
           id: 'mcp-client',
           label: 'MCP Client',
           type: 'spring',
-          description: 'Spring AI MCP integration'
+          description: 'Spring AI client that integrates MCP servers'
         },
         {
           id: 'llm',
           label: 'LLM',
           type: 'llm',
-          description: 'Decides when to call tools'
+          description: 'Decides when and which MCP tool to invoke'
         },
         {
           id: 'stdio',
           label: 'STDIO/SSE',
           type: 'inspector',
-          description: 'Communication protocol'
+          description: 'Transport layer for MCP communication'
         }
       ],
       connections: [
@@ -895,7 +905,8 @@ export const features: Feature[] = [
         { from: 'llm', to: 'stdio', label: 'Tool Execution' },
         { from: 'stdio', to: 'mcp-client', label: 'Tool Result' },
         { from: 'mcp-client', to: 'user', label: 'Response' }
-      ]
+      ],
+    docImage: '/images/official-diagrams/mcp-stack.svg'
     },
     checkpoint: {
       type: 'multiple-choice',
@@ -927,31 +938,31 @@ export const features: Feature[] = [
           id: 'user',
           label: 'Application',
           type: 'java',
-          description: 'Makes API calls'
+          description: 'Makes API calls and AI requests'
         },
         {
           id: 'chatmodel',
           label: 'ChatModel',
           type: 'spring',
-          description: 'AI operations'
+          description: 'Executes LLM calls that Spring AI auto-instruments'
         },
         {
           id: 'micrometer',
           label: 'Micrometer',
           type: 'spring',
-          description: 'Tracing and metrics'
+          description: 'Collects metrics and tracing spans'
         },
         {
           id: 'opentelemetry',
           label: 'OpenTelemetry',
           type: 'inspector',
-          description: 'Trace pipeline'
+          description: 'Exports distributed traces for debugging'
         },
         {
           id: 'actuator',
           label: 'Actuator',
           type: 'spring',
-          description: 'Endpoints'
+          description: 'Exposes health, metrics, and AI metrics endpoints'
         }
       ],
       connections: [
@@ -961,7 +972,8 @@ export const features: Feature[] = [
         { from: 'micrometer', to: 'actuator', label: 'Metrics' },
         { from: 'opentelemetry', to: 'actuator', label: 'Traces' },
         { from: 'actuator', to: 'user', label: 'Status/Metrics' }
-      ]
+      ],
+    docImage: '/images/official-diagrams/spring-ai-chat-completions-clients.jpg'
     },
     checkpoint: {
       type: 'multiple-choice',
@@ -997,25 +1009,25 @@ export const features: Feature[] = [
           id: 'user',
           label: 'Question',
           type: 'java',
-          description: 'The question to evaluate'
+          description: 'The question and answer to evaluate'
         },
         {
           id: 'judge',
           label: 'LLM-as-a-Judge',
           type: 'spring',
-          description: 'Evaluates the answer'
+          description: 'Second prompt that scores relevancy or factuality'
         },
         {
           id: 'answer',
           label: 'Answer',
           type: 'java',
-          description: 'The answer to check'
+          description: 'The LLM-generated answer being checked'
         },
         {
           id: 'context',
           label: 'Context',
           type: 'java',
-          description: 'Reference context'
+          description: 'Reference documents for fact-check judge'
         }
       ],
       connections: [
@@ -1023,7 +1035,8 @@ export const features: Feature[] = [
         { from: 'judge', to: 'context', label: 'Context' },
         { from: 'judge', to: 'answer', label: 'Verdict Generation' },
         { from: 'judge', to: 'user', label: 'PASS/FAIL' }
-      ]
+      ],
+    docImage: '/images/official-diagrams/structured-output-basic.png'
     },
     checkpoint: {
       type: 'multiple-choice',
