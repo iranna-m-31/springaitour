@@ -37,9 +37,14 @@ out/
 .vscode/
 
 .env
+### Node / build artifacts ###
+/node_modules
+frontend/node_modules/
+frontend/dist/
+backend/build/
 ### Test artifacts ###
-springai-tutor-ui/test-results
+frontend/test-results
 ### Claude Code settings ###
 .claude/
 
-/src/main/resources/static
+/backend/src/main/resources/static

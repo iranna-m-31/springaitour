@@ -6,8 +6,6 @@ An interactive tutorial for learning Spring AI 2.0.1 with hands-on demos, live A
 
 Try the tutorial online: [springaitour.vercel.app](https://springaitour.vercel.app)
 
-![Spring AI Tutor Screenshot](https://via.placeholder.com/800x400?text=Spring+AI+Tutor+Screenshot)
-
 ## 📖 Overview
 
 The Spring AI Tutor provides 16 interactive modules covering:
@@ -24,25 +22,20 @@ Each module includes:
 - Example curl commands
 - Links to official Spring AI documentation
 
-## 🛠️ Clone & Run Locally
+## 🛠️ Choose Your Lab Mode
 
-```bash
-# 1. Clone the repository
-git clone https://github.com/iranna-m-31/springaitour.git
-cd springai
+### 🌐 Deployed Labs (Recommended)
+- No setup required
+- Instant access
+- Works on any device
 
-# 2. Configure your OpenRouter API key
-# Copy .env.example to .env and add your key
-cp .env.example .env
-# Edit .env and add your OpenRouter API key:
-# OPENROUTER_API_KEY=your-key-here
+Start the deployed labs at [https://springaitour.vercel.app/](https://springaitour.vercel.app/)
 
-# 3. Start the server
-./gradlew bootRun
+### 💻 Local Labs
+Run the entire tutorial on your own machine with the local setup guide:
 
-# 4. Open your browser
-http://localhost:8080
-```
+- [Local Setup Guide](docs/LOCAL_SETUP.md)
+- [Deployed Labs Guide](docs/DEPLOYED_LABS.md)
 
 ## 📚 Documentation
 
