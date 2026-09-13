@@ -2,7 +2,7 @@
   "name": "springai-tutor",
   "private": true,
   "scripts": {
-    "build:ui": "cd frontend && npm run build",
-    "dev": "cd frontend && npm run dev"
+    "build:ui": "cd spring-ai-ui && npm run build",
+    "dev": "cd spring-ai-ui && npm run dev"
   }
 }

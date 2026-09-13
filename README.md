@@ -4,7 +4,7 @@ An interactive tutorial for learning Spring AI 2.0.1 with hands-on demos, live A
 
 ## 🚀 Live Demo
 
-Try the tutorial online: [springaitour.vercel.app](https://springaitour.vercel.app)
+Try the tutorial online: [spring-ai-ui.vercel.app](https://spring-ai-ui.vercel.app)
 
 ## 📖 Overview
 
@@ -29,7 +29,7 @@ Each module includes:
 - Instant access
 - Works on any device
 
-Start the deployed labs at [https://springaitour.vercel.app/](https://springaitour.vercel.app/)
+Start the deployed labs at [https://spring-ai-ui.vercel.app/](https://spring-ai-ui.vercel.app/)
 
 ### 💻 Local Labs
 Run the entire tutorial on your own machine with the local setup guide:

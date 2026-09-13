@@ -39,12 +39,12 @@ out/
 .env
 ### Node / build artifacts ###
 /node_modules
-frontend/node_modules/
-frontend/dist/
-backend/build/
+spring-ai-ui/node_modules/
+spring-ai-ui/dist/
+spring-ai/build/
 ### Test artifacts ###
-frontend/test-results
+spring-ai-ui/test-results
 ### Claude Code settings ###
 .claude/
 
-/backend/src/main/resources/static
+/spring-ai/src/main/resources/static
