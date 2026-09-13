@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useProgress } from './HomePage'
-import { lessons, getPhaseProgress, getOverallStats } from '../data/lessons'
+import { modules } from '../data/features'
+import { getPhaseProgress, getOverallStats } from '../data/lessons'
 
 export default function CompletionPage() {
   const { completed, percent, total } = useProgress()
@@ -8,6 +9,8 @@ export default function CompletionPage() {
   const overallStats = getOverallStats(completed)
   const overallPercent = overallStats.percent
   const totalLessons = overallStats.total
+
+  const allDone = completed.size >= total
 
   const handleReset = () => {
     if (window.confirm('Reset all progress tracking? This will clear your completion marks.')) {
@@ -18,22 +21,26 @@ export default function CompletionPage() {
 
   return (
     <div className="completion-page fade-in">
+      {/* ===== HERO ===== */}
       <section className="completion-hero">
-        <div className="completion-badge">🎓</div>
-        <h1>Congratulations!</h1>
+        <div className="spring-badge">{allDone ? '🎓' : '📚'} Spring AI Tutorial</div>
+        <h1>{allDone ? 'Congratulations!' : 'Keep Going!'}</h1>
         <p className="completion-tagline">
-          You've completed all {total} features in the Spring AI Tutorial.
+          {allDone
+            ? "You've completed all {total} features in the Spring AI Tutorial. You're ready for production."
+            : 'You\'re making great progress. Keep going — each feature brings you closer to mastering Spring AI.'}
         </p>
         <div className="completion-progress">
-          <span>{completed.size} / {total} features</span>
-          <div className="progress-bar" style={{ height: '10px', maxWidth: '300px', margin: 'var(--space-4) auto 0' }}>
+          <span>{completed.size} / {total} features ({percent}%)</span>
+          <div className="progress-bar" style={{ height: '10px', maxWidth: '400px', margin: 'var(--space-3) auto 0' }}>
             <div className="progress-fill" style={{ width: `${percent}%` }} />
           </div>
         </div>
       </section>
 
+      {/* ===== WHAT YOU'VE LEARNED ===== */}
       <section className="completion-section">
-        <h2>🏁 What You've Learned</h2>
+        <h2>🏁 What You\'ve Learned</h2>
         <div className="skills-grid">
           <div className="skill-card">
             <div className="skill-icon">💬</div>
@@ -58,40 +65,57 @@ export default function CompletionPage() {
         </div>
       </section>
 
+      {/* ===== LEARNING PATH PROGRESS ===== */}
       <section className="completion-section">
-        <h2>🚀 What's Next?</h2>
-        <div className="next-steps">
-          <Link to="/playground" className="next-step-card">
-            <div className="next-step-icon">🧪</div>
-            <div>
-              <h3>Playground</h3>
-              <p>Experiment freely with any model, parameters, and prompts in a sandbox.</p>
-            </div>
-          </Link>
-          <Link to="/call-log" className="next-step-card">
-            <div className="next-step-icon">📋</div>
-            <div>
-              <h3>Call Log</h3>
-              <p>Review your API call history, inspect requests/responses, debug issues.</p>
-            </div>
-          </Link>
-          <Link to="/settings" className="next-step-card">
-            <div className="next-step-icon">⚙️</div>
-            <div>
-              <h3>Settings</h3>
-              <p>Configure models, API keys, and toggle advanced features.</p>
-            </div>
-          </Link>
-          <a href="https://docs.spring.io/spring-ai/reference/index.html" target="_blank" rel="noreferrer" className="next-step-card external">
-            <div className="next-step-icon">📚</div>
-            <div>
-              <h3>Official Docs</h3>
-              <p>Deep-dive into Spring AI reference documentation for production patterns.</p>
-            </div>
-          </a>
+        <h2>📊 Learning Path Progress</h2>
+        <div className="module-grid">
+          {modules.map((m) => {
+            const moduleFeatures = m.features
+            const completedCount = moduleFeatures.filter(id => completed.has(id)).length
+            const modulePercent = Math.round((completedCount / moduleFeatures.length) * 100)
+            return (
+              <div key={m.id} className="module-card" style={{ textDecoration: 'none' }}>
+                <div className="module-card-header">
+                  <div className={`module-icon ${m.iconType}`}>{m.icon}</div>
+                  <div>
+                    <h3>{m.title}</h3>
+                    <div className="module-card-badges">
+                      <span className="feature-count">{completedCount}/{moduleFeatures.length} features</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="progress-bar" style={{ marginTop: 'var(--space-2)' }}>
+                  <div className="progress-fill" style={{ width: `${modulePercent}%` }} />
+                </div>
+              </div>
+            )
+          })}
         </div>
       </section>
 
+      {/* ===== LESSON PHASE PROGRESS ===== */}
+      <section className="completion-section">
+        <h2>🧭 Phase Progress</h2>
+        <div className="assessment-summary">
+          {phaseProgress.map(p => (
+            <div key={p.phaseId} className="assessment-phase-detail" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)' }}>
+              <h4>{p.phaseIcon} {p.phaseTitle}</h4>
+              <p>{p.completed} of {p.total} lessons completed</p>
+              <div className="assessment-progress-bar" style={{ marginTop: 'var(--space-2)' }}>
+                <div className="assessment-progress-fill" style={{ width: `${p.percent}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="overall-score" style={{ marginTop: 'var(--space-4)', textAlign: 'center', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-6)' }}>
+          <h3 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-primary)', marginBottom: 'var(--space-2)' }}>
+            Overall: {overallPercent}%
+          </h3>
+          <p style={{ color: 'var(--text-secondary)' }}>{completed.size} / {totalLessons} lessons • {completed.size}/{total} features</p>
+        </div>
+      </section>
+
+      {/* ===== PRODUCTION CHECKLIST ===== */}
       <section className="completion-section">
         <h2>🔧 Production Checklist</h2>
         <ul className="checklist">
@@ -111,49 +135,17 @@ export default function CompletionPage() {
         <h2>📝 Knowledge Assessment</h2>
         <p>Test your understanding of Spring AI concepts. Ready to attempt the final challenge?</p>
 
-        <div className="assessment-results">
-          <div className="assessment-summary">
-            <div className="assessment-header">
-              <span className="assessment-title">Mastery by Phase</span>
-              <div className="assessment-progress">
-                {phaseProgress.map(p => (
-                  <div key={p.phaseId} className="assessment-phase-bar">
-                    <span className="assessment-phase-name">{p.phaseTitle}</span>
-                    <div className="assessment-phase-fill" style={{ width: `${p.percent}%` }} />
-                    <span className="assessment-phase-text">{p.completed}/{p.total} ({p.percent}%)</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="overall-score">
-              <h3>Overall Score: {overallPercent}%</h3>
-              <p>{completed.size} / {totalLessons} lessons completed</p>
-            </div>
-          </div>
-
-          <div className="assessment-details">
-            {phaseProgress.map((p) => (
-              <div key={p.phaseId} className="assessment-phase-detail">
-                <h4>{p.phaseTitle}</h4>
-                <p>{p.completed} of {p.total} lessons completed</p>
-                <div className="assessment-progress-bar">
-                  <div className="assessment-progress-fill" style={{ width: `${p.percent}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         <button
           className="btn btn-primary btn-block"
+          style={{ marginBottom: 'var(--space-6)' }}
           onClick={() => alert('Final knowledge assessment would be launched here. Attempt 10 questions testing all phases.')}>
           Take Final Knowledge Assessment
         </button>
 
-        {completed.size >= lessons.length * 0.8 && (
+        {allDone && (
           <div className="assessment-eligible">
-            <p>🎓 You're eligible for the final capstone! Your mastery exceeds 80% across all phases.</p>
-            <Link to="/capstone" className="btn btn-success btn-block">
+            <p>🎓 You\'re eligible for the final capstone! Your mastery is complete across all phases.</p>
+            <Link to="/capstone" className="btn btn-success btn-block" style={{ display: 'inline-flex', marginTop: 'var(--space-2)' }}>
               Start Capstone Project →
             </Link>
           </div>

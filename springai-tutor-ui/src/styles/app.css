@@ -805,6 +805,104 @@ code { background: var(--code-bg-inline); padding: 2px 6px; border-radius: var(-
 .footer-link { color: var(--text-secondary); text-decoration: none; transition: color var(--duration-fast) var(--ease); display: inline-block; }
 .footer-link:hover { color: var(--accent-primary); text-decoration: underline; }
 
+/* ---------- Completion Page ---------- */
+.completion-page { max-width: 1000px; margin: 0 auto; padding: var(--space-8) 0; }
+.completion-hero { text-align: center; padding: var(--space-12) 0; border-bottom: 1px solid var(--card-border); margin-bottom: var(--space-8); }
+.completion-badge {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-4); background: var(--spring-green-soft);
+  border: 1px solid rgba(16,185,129,0.2); border-radius: var(--radius-full);
+  font-size: 0.875rem; font-weight: 600; color: var(--accent-primary);
+  margin-bottom: var(--space-4);
+}
+.completion-hero h1 {
+  font-size: 3rem; font-weight: 800; color: var(--text-primary);
+  margin-bottom: var(--space-2); letter-spacing: -0.04em; line-height: 1.15;
+}
+.completion-tagline {
+  font-size: 1.125rem; color: var(--text-secondary); max-width: 640px; margin: 0 auto var(--space-4);
+}
+.completion-progress { margin: 0 auto; width: fit-content; }
+.completion-progress span { font-size: 0.875rem; color: var(--text-secondary); margin-bottom: var(--space-2); display: block; }
+.progress-bar { width: 300px; height: 10px; background: var(--card-border); border-radius: var(--radius-full); overflow: hidden; margin: 0 auto; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--spring-green), var(--spring-cyan)); border-radius: var(--radius-full); transition: width var(--duration-slow) var(--ease); }
+
+.completion-section { margin-bottom: var(--space-8); }
+.completion-section h2 {
+  font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-4);
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.completion-section h2 .next-step-icon { font-size: 1.25rem; }
+
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-6); margin-bottom: var(--space-8);
+}
+.skill-card {
+  background: var(--card-bg); border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg); padding: var(--space-6); text-align: center;
+}
+.skill-card .skill-icon { font-size: 2rem; margin-bottom: var(--space-3); display: block; }
+.skill-card h3 { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-2); }
+.skill-card p { font-size: 0.875rem; color: var(--text-secondary); }
+
+.next-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4); margin-top: var(--space-4); }
+.next-step-card {
+  background: var(--card-bg); border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg); padding: var(--space-4) var(--space-6); text-align: center;
+  transition: all var(--duration-fast) var(--ease);
+  text-decoration: none;
+}
+.next-step-card:hover { border-color: var(--spring-green); transform: translateY(-2px); }
+.next-step-card:hover .next-step-icon { color: var(--spring-green); }
+.next-step-icon { font-size: 1.25rem; color: var(--text-secondary); margin-bottom: var(--space-2); display: block; }
+.next-step-card h3 { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-1); }
+.next-step-card p { font-size: 0.75rem; color: var(--text-secondary); }
+
+.completion-checklist { margin: var(--space-4) 0; }
+.checklist { margin: var(--space-4) 0; list-style: none; }
+.checklist li {
+  display: flex; align-items: center; gap: var(--space-3);
+  color: var(--text-secondary); font-size: 0.875rem;
+  margin-bottom: var(--space-2); padding: var(--space-2) var(--space-3);
+  background: var(--content-bg); border-radius: var(--radius-md);
+  border: 1px solid var(--card-border);
+}
+.assessment-eligible {
+  margin-top: var(--space-6); padding: var(--space-6);
+  background: var(--spring-green-soft); border: 1px solid rgba(16,185,129,0.3);
+  border-radius: var(--radius-lg); text-align: center;
+}
+.assessment-eligible p { color: var(--accent-primary); font-weight: 600; margin-bottom: var(--space-4); }
+.assessment-eligible .btn { margin: var(--space-2); }
+
+.completion-assessment { margin: var(--space-6) 0; }
+.completion-assessment h2 { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-4); }
+.assessment-summary { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); margin-bottom: var(--space-6); }
+.assessment-header { margin-bottom: var(--space-4); }
+.assessment-title { font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3); }
+.assessment-progress { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+.assessment-phase-bar { background: var(--card-border); border-radius: var(--radius-md); height: 8px; overflow: hidden; }
+.assessment-phase-fill { height: 100%; background: linear-gradient(90deg, var(--spring-green), var(--spring-cyan)); border-radius: var(--radius-md); transition: width var(--duration-slow) var(--ease); }
+.assessment-phase-name { font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap; }
+.assessment-phase-text { font-size: 0.7rem; color: var(--text-muted); }
+.overall-score { text-align: right; }
+.overall-score h3 { font-size: 1.5rem; font-weight: 800; color: var(--accent-primary); margin-bottom: var(--space-2); }
+.overall-score p { font-size: 0.875rem; color: var(--text-secondary); }
+
+.assessment-details { margin-top: var(--space-4); }
+.assessment-phase-detail { margin-bottom: var(--space-3); }
+.assessment-phase-detail h4 { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-2); }
+.assessment-phase-detail p { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: var(--space-1); }
+.assessment-progress-bar { height: 6px; background: var(--card-border); border-radius: var(--radius-full); overflow: hidden; }
+.assessment-progress-fill { height: 100%; background: linear-gradient(90deg, var(--spring-green), var(--spring-cyan)); border-radius: var(--radius-full); transition: width var(--duration-slow) var(--ease); }
+
+.completion-actions { display: flex; gap: var(--space-4); flex-wrap: wrap; justify-content: center; margin-top: var(--space-6); }
+.completion-actions .btn { min-width: 160px; }
+.completion-footer { padding-top: var(--space-6); border-top: 1px solid var(--card-border); color: var(--text-secondary); font-size: 0.875rem; margin-top: var(--space-6); }
+.completion-footer a { color: var(--accent-primary); text-decoration: underline; }
+
 /* ---------- Animations ---------- */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .fade-in { animation: fadeIn var(--duration-normal) var(--ease) forwards; }
