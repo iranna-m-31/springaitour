@@ -57,7 +57,6 @@ tasks.withType<Test> {
 
 // Load .env file and pass to bootRun
 tasks.bootRun {
-	dependsOn("uiBuild")
 	val envFile = file(".env")
 	if (envFile.exists()) {
 		envFile.readLines()
@@ -68,21 +67,4 @@ tasks.bootRun {
 				environment[key.trim()] = value.trim()
 			}
 	}
-}
-
-// Build the React UI into src/main/resources/static before running the server
-val pnpmExecutable = System.getenv("PNPM_EXECUTABLE")?.let { "$it" }
-	?: "/Users/irannam/.nvm/versions/node/v24.11.0/bin/pnpm"
-
-tasks.register<Exec>("uiBuild") {
-	workingDir = file("../spring-ai-ui")
-	environment("SPRING_BOOT_BUILD", "true")
-	commandLine(pnpmExecutable, "run", "build")
-	group = "application"
-	description = "Build the React UI into src/main/resources/static"
-}
-
-// bootJar should also build the UI so the JAR includes the latest frontend
-tasks.named("bootJar") {
-	dependsOn("uiBuild")
 }
