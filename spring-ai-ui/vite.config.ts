@@ -3,8 +3,7 @@ import { defineConfig, loadEnv } from 'vite'
 
 // Build output directory:
 // - Vercel deployment: dist/ (standard, Vercel expects this)
-// - Spring Boot local/dev: ../backend/src/main/resources/static (so JAR includes UI)
-// The SPRING_BOOT_BUILD env var is set by the Gradle uiBuild task.
+// - Spring Boot local/dev: ../../spring-ai/src/main/resources/static (so JAR includes UI)
 const springBootBuild = process.env.SPRING_BOOT_BUILD === 'true'
 
 export default defineConfig(({ mode }) => {
